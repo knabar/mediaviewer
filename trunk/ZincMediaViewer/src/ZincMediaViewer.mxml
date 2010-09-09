@@ -48,7 +48,7 @@
 		} else {
 			isMouseOverStage = true;
 		}
-		keyboardManager = new KeyboardManager(this.myDispatcher, stage);
+		keyboardManager = new KeyboardManager(this.myDispatcher, stage, this.main);
 	}
 	private function dispatchAppStatusFullScreenEvent(e:Event):void {
 		this.myDispatcher.dispatchEvent(new AppStatusEvent(org.mdid.mediaviewer.events.AppStatusEvent.FULLSCREEN_EVENT_DETECTED));

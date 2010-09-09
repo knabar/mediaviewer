@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<EventMap xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns="http://mate.asfusion.com/"
+	xmlns:business="org.mdid.mediaviewer.business.*">
+
+	<mx:Script>
+		<![CDATA[
+		import org.mdid.mediaviewer.business.*;
+		import org.mdid.mediaviewer.views.*;
+		import org.mdid.mediaviewer.events.*;
+		import org.mdid.mediaviewer.vo.*;
+		]]>
+	</mx:Script>
+	
+	<!-- Debugger  -->
+	<!-- remove during production. This tag can be placed here or in your main application -->
+	<Debugger level="{Debugger.ALL}" />
+
+	<!-- ControlBarClickEvent.NEXT_SLIDE && EdgeControlsClickEvent.NEXT_SLIDE  -->
+	<!-- Go to next slide in slideshow  -->
+	<EventHandlers type="{ControlBarClickEvent.NEXT_SLIDE}" debug="false">
+		<MethodInvoker generator="{SlideshowManager}" method="gotoSlide" arguments="{[event.type, event.panePosition]}"/>
+	</EventHandlers>
+	<EventHandlers type="{EdgeControlsEvent.NEXT_SLIDE}" debug="false">
+		<MethodInvoker generator="{SlideshowManager}" method="gotoSlideByPane" arguments="{[event.type, event.panePosition, event.shiftKeyDown]}"/>
+	</EventHandlers>
+	<!-- ControlBarClickEvent.PREVIOUS_SLIDE && EdgeControlsClickEvent.PREVIOUS_SLIDE   -->
+	<!-- Go to previous slide in slideshow  -->
+	<EventHandlers type="{ControlBarClickEvent.PREVIOUS_SLIDE}" debug="false">
+		<MethodInvoker generator="{SlideshowManager}" method="gotoSlide" arguments="{[event.type, event.panePosition]}"/>
+	</EventHandlers>
+	<EventHandlers type="{EdgeControlsEvent.PREVIOUS_SLIDE}" debug="false">
+		<MethodInvoker generator="{SlideshowManager}" method="gotoSlideByPane" arguments="{[event.type, event.panePosition, event.shiftKeyDown]}"/>
+	</EventHandlers>
+	<!-- ControlBarClickEvent.LAST_SLIDE  -->
+	<!-- Go to last slide in slideshow  -->
+	<EventHandlers type="{ControlBarClickEvent.LAST_SLIDE}" debug="false">
+		<MethodInvoker generator="{SlideshowManager}" method="gotoSlide" arguments="{[event.type, event.panePosition]}"/>
+	</EventHandlers>
+	<!-- ControlBarClickEvent.FIRST_SLIDE  -->
+	<!-- Go to first slide in slideshow  -->
+	<EventHandlers type="{ControlBarClickEvent.FIRST_SLIDE}" debug="false">
+		<MethodInvoker generator="{SlideshowManager}" method="gotoSlide" arguments="{[event.type, event.panePosition]}"/>
+	</EventHandlers>
+	<!-- ControlBarClickEvent.GO_TO_SLIDE  -->
+	<!-- Go to slide X in slideshow  -->
+	<EventHandlers type="{ControlBarClickEvent.GO_TO_SLIDE}" debug="false">
+		<MethodInvoker generator="{SlideshowManager}" method="gotoSlideByIndex" arguments="{[event.slideIdx, event.panePosition]}"/>
+	</EventHandlers>
+	<!-- ControlBarClickEvent.START_SHOW  -->
+	<!-- Start playing slideshow  -->
+	<EventHandlers type="{ControlBarClickEvent.START_SHOW}" debug="false">
+		<MethodInvoker generator="{SlideshowManager}" method="startStopSlideshow" arguments="{[event.type, event.delayInSeconds, event.panePosition]}"/>
+	</EventHandlers>
+	<!-- ControlBarClickEvent.STOP_SHOW  -->
+	<!-- Stop playing slideshow  -->
+	<EventHandlers type="{ControlBarClickEvent.STOP_SHOW}" debug="false">
+		<MethodInvoker generator="{SlideshowManager}" method="startStopSlideshow" arguments="{[event.type, event.delayInSeconds, event.panePosition]}"/>
+	</EventHandlers>
+	<!-- ControlBarClickEvent.STOP_SHOW  -->
+	<!-- Stop playing slideshow  -->
+	<EventHandlers type="{ControlBarClickEvent.TOGGLE_PAIRWISE_MODE}" debug="false">
+		<MethodInvoker generator="{SlideshowManager}" method="togglePairwiseMode" arguments="{[event.enablePairwiseMode]}"/>
+	</EventHandlers>
+	<!-- ControlBarClickEvent.REFRESH_BUTTON_STATES  -->
+	<!-- Refresh button states on control bar  -->
+	<EventHandlers type="{ControlBarClickEvent.REFRESH_BUTTON_STATES}" debug="false">
+		<MethodInvoker generator="{SlideshowManager}" method="calculateButtonStates"/>
+	</EventHandlers>
+	
+	
+	<!-- SlideshowEvent.REFRESH_CURRENT_IMAGE  -->
+	<!-- Refresh current image (e.g. when loading a new split screen)  -->
+	<EventHandlers type="{SlideshowEvent.REFRESH_CURRENT_IMAGE}" debug="false">
+		<MethodInvoker generator="{SlideshowManager}" method="gotoSlide" arguments="{[event.type, event.panePosition]}"/>
+	</EventHandlers>
+	<!-- SlideshowEvent.REFRESH_CURRENT_IMAGE  -->
+	<!-- Refresh current image (e.g. when loading a new split screen)  -->
+	<EventHandlers type="{SlideshowEvent.REFRESH_CURRENT_IMAGES_1_2}" debug="false">
+		<MethodInvoker generator="{SlideshowManager}" method="gotoSlide" arguments="{[event.type, event.panePosition]}"/>
+	</EventHandlers>
+	<!-- SlideshowEvent.SET_NUM_IMAGE_PANES  -->
+	<!-- Set number of display panes (e.g. when loading a new split screen)  -->
+	<EventHandlers type="{SlideshowEvent.SET_NUM_IMAGE_PANES}" debug="false">
+		<MethodInvoker generator="{SlideshowManager}" method="setNumImagePanes" arguments="{event.numImagePanes}"/>
+	</EventHandlers>
+	<!-- SlideshowEvent.REFRESH_TOPBAR_TITLE  -->
+	<!-- Refreshs the title on the top bar (e.g. when changing number of display panes)  -->
+	<EventHandlers type="{SlideshowEvent.REFRESH_TOPBAR_TITLE}" debug="false">
+		<MethodInvoker generator="{SlideshowManager}" method="setTopBarTitle"/>
+	</EventHandlers>
+</EventMap>

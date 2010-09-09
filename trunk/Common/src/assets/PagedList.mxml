@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:mate="http://mate.asfusion.com/"
+	xmlns:controls="com.adobe.controls.*"
+	width="600" height="300"
+	horizontalScrollPolicy="off" verticalScrollPolicy="off"
+	creationComplete="initStatic()">
+
+	<mx:Script>
+		<![CDATA[
+		import mx.collections.ArrayCollection;
+		private function initStatic():void {
+			var list:Array = [];
+			var listSrc:Array = ["PSP_003176_1745.jpg",
+								"PSP_003655_1885.jpg",
+								"PSP_003948_0935.jpg",
+								"PSP_003972_1305.jpg",
+								"PSP_004018_1505.jpg",
+								"PSP_004060_2020.jpg",
+								"PSP_004077_1325.jpg",
+								"PSP_004085_1420.jpg",
+								"PSP_004230_1080.jpg",
+								"PSP_004275_1275.jpg",
+								"PSP_004310_1445.jpg",
+								"PSP_004311_1050.jpg",
+								"PSP_004315_1815.jpg",
+								"PSP_004324_1060.jpg",
+								"PSP_004384_1705.jpg",
+								"PSP_004434_1885.jpg",
+								"PSP_004664_0955.jpg",
+								"PSP_004673_0935.jpg",
+								"PSP_004708_1000.jpg",
+								"PSP_004739_0935.jpg",
+								"PSP_004742_0990.jpg",
+								"PSP_003655_1885.jpg",
+								"PSP_003948_0935.jpg",
+								"PSP_003972_1305.jpg",
+								"PSP_004018_1505.jpg",
+								"PSP_004060_2020.jpg",
+								"PSP_004077_1325.jpg",
+								"PSP_004085_1420.jpg",
+								"PSP_004230_1080.jpg",
+								"PSP_004275_1275.jpg",
+								"PSP_004310_1445.jpg",
+								"PSP_004311_1050.jpg",
+								"PSP_004315_1815.jpg",
+								"PSP_004324_1060.jpg",
+								"PSP_004384_1705.jpg",
+								"PSP_004434_1885.jpg",
+								"PSP_004664_0955.jpg",
+								"PSP_004673_0935.jpg",
+								"PSP_004708_1000.jpg",
+								"PSP_004739_0935.jpg",
+								"PSP_004742_0990.jpg",
+								"PSP_003655_1885.jpg",
+								"PSP_003948_0935.jpg",
+								"PSP_003972_1305.jpg",
+								"PSP_004018_1505.jpg",
+								"PSP_004060_2020.jpg",
+								"PSP_004077_1325.jpg",
+								"PSP_004085_1420.jpg",
+								"PSP_004230_1080.jpg",
+								"PSP_004275_1275.jpg",
+								"PSP_004310_1445.jpg",
+								"PSP_004311_1050.jpg",
+								"PSP_004315_1815.jpg",
+								"PSP_004324_1060.jpg",
+								"PSP_004384_1705.jpg",
+								"PSP_004434_1885.jpg",
+								"PSP_004664_0955.jpg",
+								"PSP_004673_0935.jpg",
+								"PSP_004708_1000.jpg",
+								"PSP_004739_0935.jpg",
+								"PSP_004742_0990.jpg",
+								"PSP_003655_1885.jpg",
+								"PSP_003948_0935.jpg",
+								"PSP_003972_1305.jpg",
+								"PSP_004018_1505.jpg",
+								"PSP_004060_2020.jpg",
+								"PSP_004077_1325.jpg",
+								"PSP_004085_1420.jpg",
+								"PSP_004230_1080.jpg",
+								"PSP_004275_1275.jpg",
+								"PSP_004310_1445.jpg",
+								"PSP_004311_1050.jpg",
+								"PSP_004315_1815.jpg",
+								"PSP_004324_1060.jpg",
+								"PSP_004384_1705.jpg",
+								"PSP_004434_1885.jpg",
+								"PSP_004664_0955.jpg",
+								"PSP_004673_0935.jpg",
+								"PSP_004708_1000.jpg",
+								"PSP_004739_0935.jpg",
+								"PSP_004742_0990.jpg",
+								"PSP_003655_1885.jpg",
+								"PSP_003948_0935.jpg",
+								"PSP_003972_1305.jpg",
+								"PSP_004018_1505.jpg",
+								"PSP_004060_2020.jpg",
+								"PSP_004077_1325.jpg",
+								"PSP_004085_1420.jpg",
+								"PSP_004230_1080.jpg",
+								"PSP_004275_1275.jpg",
+								"PSP_004310_1445.jpg",
+								"PSP_004311_1050.jpg",
+								"PSP_004315_1815.jpg",
+								"PSP_004324_1060.jpg",
+								"PSP_004384_1705.jpg",
+								"PSP_004434_1885.jpg",
+								"PSP_004664_0955.jpg",
+								"PSP_004673_0935.jpg",
+								"PSP_004708_1000.jpg",
+								"PSP_004739_0935.jpg",
+								"PSP_004742_0990.jpg",
+								"PSP_005149_1715.jpg"];
+			for(var i:int=0;i<listSrc.length;i++) {
+				list.push("http://www.adobe.com/devnet/flex/samples/fig_pagedlist/images/"+listSrc[i]);
+			}
+			pagedList.dataProvider = list;
+		}
+		]]>
+	</mx:Script>
+
+	<controls:PagedList
+		id="pagedList"
+		includeInLayout="true"
+		right="40"
+		left="40"
+		height="200"	    
+		itemRenderer="com.adobe.renderers.MyTile"
+		currentPage="{scroller.currentPage}"
+		visible="false"
+	/>
+	<mx:Button styleName="pagedListPrev" click="{pagedList.currentPage--}" left="5" width="22" height="22" />
+	<controls:PagedListAffordance 
+		id="scroller"
+		left="10" right="10" height="16" 
+		currentPage="{pagedList.currentPage}"
+		numberOfPages="{pagedList.totalPages}"
+		 />
+	<mx:Button styleName="pagedListNext" click="{pagedList.currentPage++}" right="0" width="22" height="22" />
+	
+</mx:Canvas>

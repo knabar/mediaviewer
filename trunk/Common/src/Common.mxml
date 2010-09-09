@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml"
+	layout="absolute"
+	xmlns:maps="org.mdid.mediaviewer.maps.*"
+	xmlns:views="org.mdid.mediaviewer.views.*"
+	pageTitle="MediaViewer"
+	frameRate="32"
+	backgroundColor="#000000"/>

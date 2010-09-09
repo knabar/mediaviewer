@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:maps="org.mdid.mediaviewer.maps.*"
+	xmlns:views="org.mdid.mediaviewer.views.*"
+	xmlns:mate="http://mate.asfusion.com/"
+	backgroundColor="#000000"
+	width="100%" height="100%" 
+	horizontalScrollPolicy="off" verticalScrollPolicy="off" 
+	creationComplete="init()"
+	currentState="single"
+	>
+	
+	<mx:Script>
+		<![CDATA[
+		import org.mdid.mediaviewer.vo.MdidContextMenu;
+		import flash.utils.Timer;
+		import flash.events.TimerEvent;
+		import flash.events.MouseEvent;
+		import flash.events.ContextMenuEvent;
+		import mx.collections.ArrayCollection;
+		import mx.containers.Box;
+		import mx.events.ResizeEvent;
+		import mx.events.CloseEvent;
+		import mx.core.Application;
+		import mx.managers.PopUpManager;
+		import mx.managers.CursorManager;
+		import org.mdid.mediaviewer.events.DisplayControlsEvent;
+		import org.mdid.mediaviewer.events.ScrubberEvent;
+		import org.mdid.mediaviewer.events.SlideshowEvent;
+		import org.mdid.mediaviewer.events.AppMenuClickEvent;
+		import org.mdid.mediaviewer.events.AppStatusEvent;
+		import org.mdid.mediaviewer.events.ControlBarClickEvent;
+		
+		[Bindable] public var slides:ArrayCollection;
+		[Bindable] public var isMouseOverStage:Boolean;
+		[Bindable] public var isMouseDown:Boolean;
+		[Bindable] public var serverURL:String;
+		[Bindable] public var isModalPaneDisplayed:Boolean = false;
+		
+		private static const MOUSE_REPEATER:uint = 8;//10;//25; 
+		private var mouseTimer:Timer = new Timer(300, 0);
+		private var lastMouseLoc:Point = new Point();
+		private var curMouseLoc:Point = new Point();
+		private var mdidContextMenu:MdidContextMenu;
+		
+		private function init():void {
+			this.mdidContextMenu  = new MdidContextMenu(this, "MainView", this.myDispatcher);
+			this.topbar.setStyle("showEffect", myRollDownTopBar);
+			this.topbar.setStyle("hideEffect", myRollUpTopBar);
+			this.appmenu.setStyle("showEffect", myRollUpAppMenu);
+			this.appmenu.setStyle("hideEffect", myRollDownAppMenu);
+			this.appbar.setStyle("showEffect", myRollUpAppBar);
+			this.appbar.setStyle("hideEffect", myRollDownAppBar);
+			this.addEventListener(MouseEvent.MOUSE_DOWN, handleMouseClick);
+			mouseTimer.addEventListener(TimerEvent.TIMER, hideMouseAndDisplayControls);
+			this.myDispatcher.dispatchEvent(new DisplayControlsEvent(DisplayControlsEvent.SHOW_CONTROLS));
+			lastMouseLoc.x = this.mouseX;
+			lastMouseLoc.y = this.mouseY;
+			mouseTimer.start();
+			handleAppResize();
+		}
+		private var isContextMenuShowing:Boolean = false;
+		private var isMouseShowing:Boolean = true;
+		public function handleContextMenuSelect(e:AppStatusEvent):void {
+			if (e.contextMenuEventType == ContextMenuEvent.MENU_ITEM_SELECT) {
+				isContextMenuShowing = false;
+			} else if (e.contextMenuEventType == ContextMenuEvent.MENU_SELECT) {
+				isContextMenuShowing = true;
+				this.addEventListener(MouseEvent.MOUSE_MOVE, handleMouseClick);
+			}
+		}
+		private function handleMouseClick(e:Event):void {
+			if (this.hasEventListener(MouseEvent.MOUSE_MOVE)) {
+				this.removeEventListener(MouseEvent.MOUSE_MOVE, handleMouseClick);
+			}
+			isContextMenuShowing = false;
+			if (!isMouseShowing) {
+				showMouseAndDisplayControls(e);
+			} else {
+				var refreshEvent:AppStatusEvent = new AppStatusEvent(AppStatusEvent.REFRESH_SESSION);
+				this.myDispatcher.dispatchEvent(refreshEvent);				
+			}
+		}
+		private function hideMouseAndDisplayControls(e:TimerEvent):void {
+			curMouseLoc.x = this.mouseX;
+			curMouseLoc.y = this.mouseY;
+			if ( (this.isMouseOverStage && (isMouseDown || Point.distance(lastMouseLoc, curMouseLoc) > 9)) || this.appmenu.visible || this.isContextMenuShowing ) {
+				mouseTimer.reset();
+				mouseTimer.start();
+			} else if (mouseTimer.currentCount >= MOUSE_REPEATER) {
+				mouseTimer.reset();
+				CursorManager.hideCursor();
+				if (this.isMouseOverStage && !this.isModalPaneDisplayed) {
+					Mouse.hide();
+					isMouseShowing = false;
+				}
+				this.myDispatcher.dispatchEvent(new DisplayControlsEvent(DisplayControlsEvent.HIDE_CONTROLS));
+				this.toggleBars(DisplayControlsEvent.HIDE_CONTROLS);
+				this.addEventListener(MouseEvent.MOUSE_MOVE, showMouseAndDisplayControls);
+			}
+			lastMouseLoc = curMouseLoc.clone();
+		}
+		private function showMouseAndDisplayControls(e:Event):void {
+			this.removeEventListener(MouseEvent.MOUSE_MOVE, showMouseAndDisplayControls);
+			mouseTimer.start();
+			CursorManager.showCursor();
+			Mouse.show();
+			isMouseShowing = true;
+			this.myDispatcher.dispatchEvent(new DisplayControlsEvent(DisplayControlsEvent.SHOW_CONTROLS));
+			this.toggleBars(DisplayControlsEvent.SHOW_CONTROLS);
+			var refreshEvent:AppStatusEvent = new AppStatusEvent(AppStatusEvent.REFRESH_SESSION);
+			this.myDispatcher.dispatchEvent(refreshEvent);
+		}
+		public function contractFromTop():void {
+			this.displaycontainer.height -= 35;
+			this.displaycontainer.y += 35;
+		}
+		public function expandFromTop():void {
+			this.displaycontainer.height += 35;
+			this.displaycontainer.y -= 35;
+		}
+		private function showLoginPane():void {
+			var login:LoginPane=LoginPane(PopUpManager.createPopUp( this, LoginPane , true));
+			PopUpManager.centerPopUp(login);
+			login.addEventListener(CloseEvent.CLOSE, closeLoginPane);
+			this.isModalPaneDisplayed = true;
+			if (!isMouseShowing) {
+				CursorManager.showCursor();
+				Mouse.show();
+				isMouseShowing = true;
+			}
+		}
+		private function closeLoginPane(e:Event):void {
+			PopUpManager.removePopUp(LoginPane(e.currentTarget));
+			this.isModalPaneDisplayed = false;
+			if (e.currentTarget.currentState == "successState") {
+				showSlideshowsPane();
+			}
+		}
+		private function showSlideshowsPane():void {
+              var slideshows:SlideshowsPane=SlideshowsPane(PopUpManager.createPopUp( this, SlideshowsPane , true));
+               PopUpManager.centerPopUp(slideshows);
+               slideshows.addEventListener(CloseEvent.CLOSE, closeSlideshowsPane);
+               this.isModalPaneDisplayed = true;
+               if (!isMouseShowing) {
+					CursorManager.showCursor();
+	            	Mouse.show();
+					isMouseShowing = true;
+               }
+		}
+		private function closeSlideshowsPane(e:Event):void {
+			PopUpManager.removePopUp(SlideshowsPane(e.currentTarget));
+			this.isModalPaneDisplayed = false;
+		}
+		private function handleAppResize():void {
+			this.displaycontainer.width = Application.application.width;
+			this.displaycontainer.height = Application.application.height;
+			if (this.topbar.isBarPinned && this.appbar.isBarPinned) {
+				this.displaycontainer.height -= 80;
+				this.displaycontainer.y = 35;
+			} else if (this.topbar.isBarPinned) {
+				this.displaycontainer.height -= 35;
+				this.displaycontainer.y = 35;
+			} else if (this.appbar.isBarPinned) {
+				this.displaycontainer.height -= 45;
+			}
+			this.appbar.y = this.appbar.isBarRaised ? Application.application.height - this.appbar.height : Application.application.height;
+			this.appmenu.y = this.appbar.isMenuRaised ? Application.application.height - 90 : Application.application.height;
+		}
+		private var isFirstChangeStateEvent:Boolean = true;
+		private function changeStates(theTargetState:String):void {
+			if (this.currentState == theTargetState) return;
+			var lastState:String = this.currentState;
+			this.currentState = theTargetState;
+			var numPanes:uint = 0;
+			myDispatcher.dispatchEvent(new SlideshowEvent(SlideshowEvent.REMOVE_IMAGES));
+			switch (this.currentState) {
+				case "single":
+					numPanes = 1;
+					if (this.singlePane.isInitialized) {
+						this.singlePane.positionCatWindow(lastState == 'double_h' ? this.doubleHPane.catWindow1.visible : this.doubleVPane.catWindow1.visible);
+					}
+				break;
+				case "double_h":
+					numPanes = 2;
+					if (lastState == 'double_v') {
+						if (this.doubleVPane != null && this.doubleVPane.isInitialized) {
+							this.doubleHPane.showCatWindows = this.doubleVPane.catWindow1.visible;
+						} else {
+							this.doubleHPane.showCatWindows = this.singlePane.catWindow.visible;
+						}
+					} else {
+						this.doubleHPane.showCatWindows = this.singlePane.catWindow.visible;
+					}
+					if (this.doubleHPane.isInitialized) {
+						this.doubleHPane.recenterDivider();
+						this.doubleHPane.positionCatWindows();
+					}
+				break;
+				case "double_v":
+					numPanes = 2;
+					if (lastState == 'double_h') {
+						if (this.doubleHPane != null && this.doubleHPane.isInitialized) {
+							this.doubleVPane.showCatWindows = this.doubleHPane.catWindow1.visible;
+						} else {
+							this.doubleVPane.showCatWindows = this.singlePane.catWindow.visible;
+						}
+					} else {
+						this.doubleVPane.showCatWindows = this.singlePane.catWindow.visible;
+					}
+					if (this.doubleVPane.isInitialized) {
+						this.doubleVPane.recenterDivider();
+						this.doubleVPane.positionCatWindows();
+					}
+				break;
+			}
+	   		var myNumImagePanesEvent:SlideshowEvent = new SlideshowEvent(SlideshowEvent.SET_NUM_IMAGE_PANES);
+	   		myNumImagePanesEvent.numImagePanes = numPanes;
+	   		myDispatcher.dispatchEvent(myNumImagePanesEvent);
+			if (slides.length > 0) {
+				myDispatcher.dispatchEvent(new SlideshowEvent(SlideshowEvent.REFRESH_TOPBAR_TITLE));
+				if (!this.isFirstChangeStateEvent) {
+					var myRefreshEvent:SlideshowEvent = new SlideshowEvent(SlideshowEvent.REFRESH_CURRENT_IMAGE);
+					myRefreshEvent.panePosition = -1;
+					myDispatcher.dispatchEvent(myRefreshEvent);
+				}
+				this.isFirstChangeStateEvent = false;
+			}
+		}
+		private function handleScrubberEvents(theX:int, theIdx:int, theType:String):void {
+			if (slides.length < 1) return;
+			this.thumbPreview.x = theX - (this.thumbPreview.width/2);
+			if (slides[theIdx] != null && theType != ScrubberEvent.HIDE_PREVIEW) {
+				this.thumbPreview.previewThumbTitle = slides[theIdx].title;
+				if (slides[theIdx].imageIsCached) {
+					if (GeneralFactory.getInstance().runmode == GeneralFactory.WEB_MODE) {
+						this.thumbPreview.preview_image.scaleContent = true;
+						this.thumbPreview.preview_image.source = serverURL + slides[theIdx].thumbURL;	
+					} else if (GeneralFactory.getInstance().runmode == GeneralFactory.ZINC_MODE) {
+						this.thumbPreview.preview_image.scaleContent = false;
+						this.thumbPreview.preview_image.source = new Bitmap(slides[theIdx].thumbBitmap, flash.display.PixelSnapping.AUTO, true);					
+					} else if (GeneralFactory.getInstance().runmode == GeneralFactory.AIR_MODE) {
+						this.thumbPreview.preview_image.scaleContent = true;
+						this.thumbPreview.preview_image.source = GeneralFactory.getInstance().getLocalThumbCachePath() + slides[theIdx].thumbFilename;
+					}
+				} else {
+					this.thumbPreview.preview_image.scaleContent = false;
+					this.thumbPreview.preview_image.source = this.thumbPreview.previewNotAvailable;
+				}
+			}
+			if (theType == ScrubberEvent.SHOW_PREVIEW) {
+				this.thumbPreview.enabled = true;
+				this.thumbPreview.visible = true;
+			}
+			if (theType == ScrubberEvent.HIDE_PREVIEW) {
+				this.thumbPreview.enabled = false;
+				this.thumbPreview.visible = false;
+			}
+		}
+		private function rollAppMenu(eType:String):void {
+			this.appmenu.visible = (eType == ControlBarClickEvent.ROLLUP_APPMENU);
+		}
+		private function toggleBars(eType:String):void {
+			if (!this.topbar.isBarPinned) {
+				this.topbar.endEffectsStarted();
+				this.topbar.visible = (eType == DisplayControlsEvent.SHOW_CONTROLS);
+			}
+			if (!this.appbar.isBarPinned) {
+				this.appbar.endEffectsStarted();
+				this.appbar.visible = (eType == DisplayControlsEvent.SHOW_CONTROLS);
+			}
+		}
+		private function pinUnpinBar(delta:int):void {
+			displaycontainer.height += delta;
+		}
+		private function updateContextMenu(e:AppStatusEvent):void {
+			MdidContextMenu.setSyncButtons(e.synButtonObj);
+		}
+		]]>
+	</mx:Script>
+	
+	<!-- Listeners and Dispatchers  -->
+	<mate:Listener type="{ControlBarClickEvent.ROLLUP_APPMENU}" receive="rollAppMenu(event.type)" />
+	<mate:Listener type="{ControlBarClickEvent.ROLLDOWN_APPMENU}" receive="rollAppMenu(event.type)" />
+	<mate:Listener type="{ControlBarClickEvent.PIN_TOPBAR}" receive="contractFromTop()" />
+	<mate:Listener type="{ControlBarClickEvent.UNPIN_TOPBAR}" receive="expandFromTop()" />
+	<mate:Listener type="{ControlBarClickEvent.PIN_APPBAR}"	receive="pinUnpinBar(-45)" />
+	<mate:Listener type="{ControlBarClickEvent.UNPIN_APPBAR}"	receive="pinUnpinBar(45)" />
+	<mate:Listener type="{ControlBarClickEvent.SINGLE_PANE}" receive="changeStates('single')" />
+	<mate:Listener type="{ControlBarClickEvent.DOUBLE_PANE_H}" receive="changeStates('double_h')" />
+	<mate:Listener type="{ControlBarClickEvent.DOUBLE_PANE_V}" receive="changeStates('double_v')" />
+	<mate:Listener type="{AppMenuClickEvent.LOGIN}" receive="showLoginPane()" />
+	<mate:Listener type="{AppMenuClickEvent.SLIDESHOWS}" receive="showSlideshowsPane()" />
+	<mate:Listener type="{ResizeEvent.RESIZE}"	receive="handleAppResize()" />
+	<mate:Listener type="{ScrubberEvent.HIDE_PREVIEW}" receive="handleScrubberEvents(event.targetX, event.slideIdx, event.type)"/>
+	<mate:Listener type="{ScrubberEvent.SHOW_PREVIEW}" receive="handleScrubberEvents(event.targetX, event.slideIdx, event.type)"/>
+	<mate:Listener type="{ScrubberEvent.MOVE_PREVIEW}" receive="handleScrubberEvents(event.targetX, event.slideIdx, event.type)"/>
+	<mate:Listener type="{AppStatusEvent.CONTEXT_MENU_ACTIVITY}" receive="handleContextMenuSelect(event)"/>
+	<mate:Listener type="{AppStatusEvent.SYNC_BUTTON_STATES}" receive="updateContextMenu(event)"/>
+	<mate:Dispatcher id="myDispatcher"/>
+
+	<mx:Move id="myRollUpTopBar" duration="200" yBy="-35"/>
+	<mx:Move id="myRollDownTopBar" duration="200" yBy="35"/>
+	<mx:Move id="myRollUpAppBar" duration="200" yFrom="{Application.application.height}" yTo="{Application.application.height - this.appbar.height}"/>
+	<mx:Move id="myRollDownAppBar" duration="200" yBy="45"/>
+	<mx:Move id="myRollUpAppMenu" duration="200" yBy="-90" effectEnd="{this.appbar.isMenuRaised = true;}"/>
+	<mx:Move id="myRollDownAppMenu" duration="200" yBy="90" effectEnd="{this.appbar.isMenuRaised = false;}"/>
+
+	<mx:states>
+		<mx:State name="single">
+			<mx:AddChild relativeTo="{displaycontainer}" position="firstChild">
+				<views:SinglePane id="singlePane" appState="{this.currentState}" isTopBarPinned="{this.topbar.isBarPinned}" isAppBarPinned="{this.appbar.isBarPinned}"/>			
+			</mx:AddChild>
+		</mx:State>
+		<mx:State name="double_h">
+			<mx:AddChild relativeTo="{displaycontainer}" position="firstChild">
+				<views:DoublePaneHDiv id="doubleHPane" appState="{this.currentState}" isTopBarPinned="{this.topbar.isBarPinned}" isAppBarPinned="{this.appbar.isBarPinned}"/>			
+			</mx:AddChild>
+		</mx:State>
+		<mx:State name="double_v">
+			<mx:AddChild relativeTo="{displaycontainer}" position="firstChild">
+				<views:DoublePaneVDiv id="doubleVPane" appState="{this.currentState}" isTopBarPinned="{this.topbar.isBarPinned}" isAppBarPinned="{this.appbar.isBarPinned}"/>			
+			</mx:AddChild>
+		</mx:State>
+	</mx:states>
+
+	<mx:Canvas id="displaycontainer" width="100%" height="100%" horizontalScrollPolicy="off" verticalScrollPolicy="off"/>
+	<views:TopBar id="topbar" isBarPinned="true"/>
+	<views:AppMenu id="appmenu" visible="false"/>
+	<views:AppControlBar id="appbar" isBarPinned="true"/>
+	<views:ScrubThumbPreview id="thumbPreview" includeInLayout="false" bottom="46" x="300" enabled="false" visible="false"/>
+
+</mx:Canvas>

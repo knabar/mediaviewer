@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MDID version="2">
+  <SlideshowProperties slideshowid="2741">
+    <title>Byzantine</title>
+    <owner>Kevin Hegg</owner>
+    <creationdate>3/28/2005</creationdate>
+    <modificationdate>2/1/2006</modificationdate>
+    <packagedondate>3/20/2009</packagedondate>
+    <folder>
+    </folder>
+  </SlideshowProperties>
+  <Slides slidecount="7">
+    <Slide>
+      <imageresource>images/0000_15_21963_AICTIRA134.jpg</imageresource>
+      <slideid>50529</slideid>
+      <catalogdata>
+        <fields>
+          <field name="Collection">Art and Art History</field>
+          <field name="Title">First (cistern) cloister, in San Vitale</field>
+          <field name="Date">End 15thc. CE</field>
+          <field name="Work Type">Architecture</field>
+          <field name="Period">Early Renaissance</field>
+          <field name="Style">Italian</field>
+          <field name="Country">Italy</field>
+          <field name="Location">Ravenna, IT</field>
+          <field name="Source">Allan T. Kohl/Art Images for College Teaching</field>
+          <field name="ID">AICTIRA134</field>
+        </fields>
+      </catalogdata>
+    </Slide>
+    <Slide>
+      <imageresource>images/0001_15_19022_AICTEC253.jpg</imageresource>
+      <slideid>50528</slideid>
+      <catalogdata>
+        <fields>
+          <field name="Collection">Art and Art History</field>
+          <field name="Title">Empress Theodora and Her Attendants, south wall in the apse, Church of San Vitale</field>
+          <field name="Date">c.547 CE</field>
+          <field name="Work Type">Mosaic</field>
+          <field name="Technique">Mosaic process</field>
+          <field name="Period">Byzantine</field>
+          <field name="Style">Early Byzantine</field>
+          <field name="Country">Italy</field>
+          <field name="Location">Ravenna, IT</field>
+          <field name="Source">Allan T. Kohl/Art Images for College Teaching</field>
+          <field name="Measurements">2.64x3.65m</field>
+          <field name="ID">AICTEC253</field>
+        </fields>
+      </catalogdata>
+    </Slide>
+    <Slide>
+      <imageresource>images/0002_15_13950_BZ00016.jpg</imageresource>
+      <slideid>50526</slideid>
+      <catalogdata>
+        <fields>
+          <field name="Collection">Art and Art History</field>
+          <field name="Title">Emperor Justinian and His Attendants, north wall in the apse, Church of San Vitale</field>
+          <field name="Date">c.547 CE</field>
+          <field name="Work Type">Mosaic</field>
+          <field name="Technique">Mosaic process</field>
+          <field name="Period">Byzantine</field>
+          <field name="Style">Early Byzantine</field>
+          <field name="Country">Italy</field>
+          <field name="Location">Ravenna, IT</field>
+          <field name="Source">Saskia, Ltd.</field>
+          <field name="Measurements">2.64x3.65m</field>
+          <field name="ID">SASKIAkis0001</field>
+        </fields>
+      </catalogdata>
+    </Slide>
+    <Slide>
+      <imageresource>images/0003_15_19019_AICTEC250.jpg</imageresource>
+      <slideid>50530</slideid>
+      <catalogdata>
+        <fields>
+          <field name="Collection">Art and Art History</field>
+          <field name="Title">Roundel portraits of Christ and the Apostles, in the apse vault, Church of San Vitale</field>
+          <field name="Date">c.547 CE</field>
+          <field name="Work Type">Mosaic</field>
+          <field name="Technique">Mosaic process</field>
+          <field name="Period">Byzantine</field>
+          <field name="Style">Early Byzantine</field>
+          <field name="Country">Italy</field>
+          <field name="Location">Ravenna, IT</field>
+          <field name="Source">Allan T. Kohl/Art Images for College Teaching</field>
+          <field name="ID">AICTEC250</field>
+        </fields>
+      </catalogdata>
+    </Slide>
+    <Slide>
+      <imageresource>images/0004_15_13836_EM00037.jpg</imageresource>
+      <slideid>50523</slideid>
+      <catalogdata>
+        <fields>
+          <field name="Collection">Art and Art History</field>
+          <field name="Title">Church of San Vitale, interior</field>
+          <field name="Date">526-547 CE</field>
+          <field name="Work Type">Architecture</field>
+          <field name="Period">Byzantine</field>
+          <field name="Style">Early Byzantine</field>
+          <field name="Country">Italy</field>
+          <field name="Location">Ravenna, IT</field>
+          <field name="Source">M. Stokstad, Art History, vol. 1, fig. 7-30, pg. 314, slide collection</field>
+          <field name="ID">EM00037</field>
+        </fields>
+      </catalogdata>
+    </Slide>
+    <Slide>
+      <imageresource>images/0005_15_13951_BZ00017.jpg</imageresource>
+      <slideid>50525</slideid>
+      <catalogdata>
+        <fields>
+          <field name="Collection">Art and Art History</field>
+          <field name="Title">Emperor Justinian and His Attendants, north wall in the apse, detail, Church of San Vitale</field>
+          <field name="Date">c.547 CE</field>
+          <field name="Work Type">Mosaic</field>
+          <field name="Technique">Mosaic process</field>
+          <field name="Period">Byzantine</field>
+          <field name="Style">Early Byzantine</field>
+          <field name="Country">Italy</field>
+          <field name="Location">Ravenna, IT</field>
+          <field name="Source">SAAH Slide collection</field>
+          <field name="Measurements">2.64x3.65m</field>
+          <field name="ID">BZ00017</field>
+        </fields>
+      </catalogdata>
+    </Slide>
+    <Slide>
+      <imageresource>images/0006_15_13953_BZ00019.jpg</imageresource>
+      <slideid>50527</slideid>
+      <catalogdata>
+        <fields>
+          <field name="Collection">Art and Art History</field>
+          <field name="Title">Empress Theodora and Her Attendants, south wall in the apse, detail, Church of San Vitale</field>
+          <field name="Date">c.547 CE</field>
+          <field name="Work Type">Mosaic</field>
+          <field name="Technique">Mosaic process</field>
+          <field name="Period">Byzantine</field>
+          <field name="Style">Early Byzantine</field>
+          <field name="Country">Italy</field>
+          <field name="Location">Ravenna, IT</field>
+          <field name="Source">SAAH slide collection</field>
+          <field name="Measurements">2.64x3.65m</field>
+          <field name="ID">BZ00019</field>
+        </fields>
+      </catalogdata>
+    </Slide>
+  </Slides>
+</MDID>

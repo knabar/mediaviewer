@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:maps="org.mdid.mediaviewer.maps.*"
+	xmlns:views="org.mdid.mediaviewer.views.*"
+	layout="absolute"
+	pageTitle="MediaViewer"
+	frameRate="32"
+	backgroundColor="#000000"
+	applicationComplete="init()"
+	xmlns:mate="http://mate.asfusion.com/">
+
+	<mx:Script>
+		<![CDATA[
+		import org.mdid.mediaviewer.business.KeyboardManager;
+		import org.mdid.mediaviewer.events.AppStatusEvent;
+		
+		//	The following is required since WebGeneralImplementation is only
+		//	created at runtime. The comipler will optimize it out and a 1065
+		//	error will result at runtime when trying to dynamically create
+		//	an instance of FlexTestIimplementation.
+		private static const onlyForCompilation:WebGeneralImplementation = null;
+		private var keyboardManager:KeyboardManager;
+		
+		[Bindable]
+		public var isMouseOverStage:Boolean = true;
+		[Bindable]
+		public var isMouseDown:Boolean = false;
+		
+		private function init():void {
+			stage.addEventListener(Event.MOUSE_LEAVE, handleMouseLeftStage);
+			stage.addEventListener(MouseEvent.MOUSE_DOWN, handleMouseDown);
+			stage.addEventListener(MouseEvent.MOUSE_UP, handleMouseUp);
+			stage.addEventListener(flash.events.FullScreenEvent.FULL_SCREEN, dispatchAppStatusFullScreenEvent);
+			if (stage.mouseX <= 0 && stage.mouseY <=0) {
+				isMouseOverStage = false;
+				stage.addEventListener(MouseEvent.MOUSE_MOVE, handleMouseOverStage);
+			} else {
+				isMouseOverStage = true;
+			}
+			keyboardManager = new KeyboardManager(this.myDispatcher, stage, this.main);
+		}
+		private function dispatchAppStatusFullScreenEvent(e:Event):void {
+			this.myDispatcher.dispatchEvent(new AppStatusEvent(org.mdid.mediaviewer.events.AppStatusEvent.FULLSCREEN_EVENT_DETECTED));
+		}
+		private function handleMouseLeftStage(e:Event):void {
+			this.isMouseOverStage = false;
+			stage.addEventListener(MouseEvent.MOUSE_MOVE, handleMouseOverStage);
+		}
+		private function handleMouseOverStage(e:MouseEvent):void {
+			this.isMouseOverStage = true;
+			stage.removeEventListener(MouseEvent.MOUSE_MOVE, handleMouseOverStage);
+		}
+		private function handleMouseDown(e:MouseEvent):void {
+			this.isMouseDown = true;
+		}
+		private function handleMouseUp(e:MouseEvent):void {
+			this.isMouseDown = false;
+		}
+		]]>
+	</mx:Script>
+	
+	<mx:Style source="styles/main.css"/>
+	<mx:Style source="styles/buttons.css"/>
+	<mx:Style source="styles/panzoom.css"/>
+	<mx:Style source="styles/kingnarestyle.css"/>
+	
+	<mate:Dispatcher id="myDispatcher"/>
+
+	<!-- MAPS -->
+	<maps:MainEventMap/>
+	<maps:SlideshowEventMap/>
+	
+	<!-- VIEWS -->
+	<views:MainView id="main" isMouseOverStage="{this.isMouseOverStage}" isMouseDown="{this.isMouseDown}" />
+
+</mx:Application>

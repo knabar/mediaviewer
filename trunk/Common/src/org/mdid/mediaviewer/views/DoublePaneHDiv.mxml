@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:flexlib="flexlib.mdi.containers.*"
+	xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:views="org.mdid.mediaviewer.views.*"
+	xmlns:mate="http://mate.asfusion.com/"
+	width="100%" height="100%"
+	horizontalScrollPolicy="off" verticalScrollPolicy="off"
+	backgroundColor="0x000000"
+	creationComplete="init()">
+	
+	<mx:Script>
+		<![CDATA[
+		import mx.containers.dividedBoxClasses.BoxDivider;
+		import mx.events.ResizeEvent;
+		import com.asfusion.mate.core.Property;
+		import flash.utils.getTimer;
+		import flexlib.mdi.managers.MDIManager;
+		import flexlib.mdi.events.MDIManagerEvent;
+		import org.mdid.mediaviewer.events.SlideshowEvent;
+		import org.mdid.mediaviewer.events.ControlBarClickEvent;
+		import org.mdid.mediaviewer.views.CatalogDataPane;
+		import org.mdid.mediaviewer.vo.MdidContextMenu;
+ 		import mx.events.CloseEvent;
+ 		import mx.events.DividerEvent;
+   	
+     	[Bindable] public var isTopBarPinned:Boolean;
+    	[Bindable] public var isAppBarPinned:Boolean;
+    	[Bindable] public var appState:String;
+		public var showCatWindows:Boolean = false;
+    	
+	   	private var pendingFile1:Object = new Object();
+    	private var pendingFile2:Object = new Object();
+    	
+    	private var myBoxDivider:BoxDivider;
+    	private var mdidContextMenu:MdidContextMenu;
+		
+		public var isInitialized:Boolean = false;
+		
+	   	private function init():void {
+	   		trace(appState + ":" + this.id);
+	   		this.mdidContextMenu  = new MdidContextMenu(this, "DoublePaneHDiv", this.myDispatcher);
+			this.addEventListener(ResizeEvent.RESIZE, clipCatWindow1);
+			this.addEventListener(ResizeEvent.RESIZE, clipCatWindow2);
+			removeImages();
+			var myRefreshEvent:SlideshowEvent = new SlideshowEvent(SlideshowEvent.REFRESH_CURRENT_IMAGE);
+			myRefreshEvent.panePosition = -1; //refresh both panes
+			myDispatcher.dispatchEvent(myRefreshEvent);
+			catWindow1 = new CatalogDataPane();
+			catWindow1.panePosition = 1;
+			catPaneHolder1.windowManager.add(catWindow1);
+			clipCatWindow1();
+			catWindow2 = new CatalogDataPane();
+			catWindow2.panePosition = 2;
+			catPaneHolder2.windowManager.add(catWindow2);
+			clipCatWindow2();
+			myBoxDivider = this.myDividedBox.getDividerAt(0);
+			this.positionCatWindows();
+			this.isInitialized = true;
+	   	}
+	   	private function removeImages():void {
+			if (appState != "double_h") return;
+			if (this.image1.imageURL != "") {
+				this.image1.imageURL = "";
+			}
+			if (this.image2.imageURL != "") {
+				this.image2.imageURL = "";
+			}
+	   	}
+		private function handleUpdateImage(e:SlideshowEvent, image:ImageHolder, box:Box, pendingFile:Object):void {
+			if (appState != "double_h") return;
+			image.missingImageGraphic.visible = !e.isImageValid;
+			if (!e.isImageValid) {
+				box.visible = false;
+				removeImages();
+				return;
+			}
+			if (e.imageObject.cachingImage) {
+				pendingFile.filename = e.imageObject.filename;
+				pendingFile.url = e.imageObject.url;
+				box.visible = true;
+			} else {
+				box.visible = false;
+				image.imageURL = e.imageObject.url;
+			}
+		}
+		private function handleImageDownloadComplete(filename:String, image:ImageHolder, box:Box, pendingFile:Object):void {
+			if (filename == pendingFile.filename) {
+				box.visible = false;
+				image.imageURL = pendingFile.url;
+			}
+		}
+		
+		public var catWindow1:CatalogDataPane;
+		public var catWindow2:CatalogDataPane;
+		private function handleShowCatData1(isDispatchedFromTopBar:Boolean):void {
+			if (appState != "double_h") return;
+			if (isDispatchedFromTopBar) {
+				catWindow1.visible = !(catWindow1.visible && catWindow2.visible);
+			} else {
+				catWindow1.visible = !catWindow1.visible;
+			}
+			
+			if (catWindow1.visible) _clipCatWindow(catWindow1, catPaneHolder1);
+		}
+		private function handleShowCatData2(isDispatchedFromTopBar:Boolean):void {
+			if (appState != "double_h") return;
+			if (isDispatchedFromTopBar) {
+				catWindow2.visible = catWindow1.visible;
+			} else {
+				catWindow2.visible = !catWindow2.visible;
+			}
+			if (catWindow2.visible) _clipCatWindow(catWindow2, catPaneHolder2);
+		}
+		private function clipCatWindow1(e:Event = null):void {
+			_clipCatWindow(catWindow1, catPaneHolder1);
+		}
+		private function clipCatWindow2(e:Event = null):void {
+			_clipCatWindow(catWindow2, catPaneHolder2);
+		}
+		private function _clipCatWindow(theCatWindow:CatalogDataPane, theCatPaneHolder:MDICanvas):void {
+			if (appState != "double_h" || !theCatWindow.visible) return;
+			if (theCatWindow.x + theCatWindow.width > theCatPaneHolder.width) {
+				if (theCatWindow.x > 0) {
+					theCatWindow.x = (theCatPaneHolder.width - theCatWindow.width) > 0 ? (theCatPaneHolder.width - theCatWindow.width) : 0;
+				} 
+				if (theCatWindow.width > theCatPaneHolder.width) {
+					theCatWindow.width = theCatPaneHolder.width < 225 ? 225 : theCatPaneHolder.width;
+				}
+			}
+			if (theCatWindow.y + theCatWindow.height > theCatPaneHolder.height) {
+				if (theCatWindow.y > 0) {
+					theCatWindow.y = (theCatPaneHolder.height - theCatWindow.height) > 0 ? (theCatPaneHolder.height - theCatWindow.height) : 0;
+				} 
+				if (theCatWindow.height > theCatPaneHolder.height) {
+					theCatWindow.height = theCatPaneHolder.height < 225 ? 225 : theCatPaneHolder.height;
+				}
+			}
+		}
+		public function recenterDivider():void {
+			var curDividedBoxCenter:int = Math.floor(this.myDividedBox.width/2);
+			var curDividerCenter:int = this.myBoxDivider.x + Math.floor(this.myBoxDivider.width/2);
+			if (curDividerCenter != curDividedBoxCenter) {
+				this.myDividedBox.moveDivider(0, curDividedBoxCenter - curDividerCenter);
+			}
+		}
+		public function positionCatWindows():void {
+			this.catWindow1.x = 60;
+			this.catWindow1.y = 6;
+			this.catWindow1.width = 250;
+			this.catWindow1.height = 300;
+			this.catWindow1.visible = showCatWindows;
+			clipCatWindow1();
+			this.catWindow2.x = 60;
+			this.catWindow2.y = 6;
+			this.catWindow2.width = 250;
+			this.catWindow2.height = 300;
+			this.catWindow2.visible = showCatWindows;
+			clipCatWindow2();
+		}
+		private function handleDividerRelease(e:DividerEvent):void {
+			if (e.delta != 0) {
+				this.box1.width += e.delta;
+				this.box2.width -= e.delta;
+				clipCatWindow1();
+				clipCatWindow2();
+			}
+		}
+		//Fixes bug in Flex 3
+		private function handleTopBarToggle():void {
+			//if (appState != "double_h") return;
+			//this.box1.minHeight = this.isTopBarPinned ? 224 : 226;
+		}
+		private function hideSlides():void {
+			if (appState != "double_h") return;
+			if (this.blank1.visible) { //box1 is hidden
+				if (this.blank2.visible) { //box2 is hidden
+					this.blank1.visible = false;
+					this.blank2.visible = true;
+				} else { //box 2 is visible
+					this.blank1.visible = false;
+					this.blank2.visible = false;
+				}
+			} else { //box1 is visible
+				if (this.blank2.visible) { // box2 is hidden
+					this.blank1.visible = true;
+					this.blank2.visible = false;
+				} else { // box2 is visible
+					this.blank1.visible = true;
+					this.blank2.visible = true;
+				}
+			}
+		}
+		private function toggleSinglePaneVisibiliity(thePane:int):void {
+			if (thePane == 1) this.blank1.visible = !this.blank1.visible;
+			if (thePane == 2) this.blank2.visible = !this.blank2.visible;
+		}
+		]]>
+	</mx:Script>
+ 			
+	<!-- Listeners and Dispatchers  -->
+	<mate:Listener type="{SlideshowEvent.UPDATE_IMAGE_1}" receive="handleUpdateImage(event, this.image1, this.busyBox1, this.pendingFile1)"/>
+	<mate:Listener type="{SlideshowEvent.IMAGE_CACHING_COMPLETE}" receive="handleImageDownloadComplete(event.cachedFileName, this.image1, this.box1, this.pendingFile1)"/>
+	<mate:Listener type="{SlideshowEvent.UPDATE_IMAGE_2}" receive="handleUpdateImage(event, this.image2, this.busyBox2, this.pendingFile2)"/>
+	<mate:Listener type="{SlideshowEvent.IMAGE_CACHING_COMPLETE}" receive="handleImageDownloadComplete(event.cachedFileName, this.image2, this.box2, this.pendingFile2)"/>
+	<mate:Listener type="{SlideshowEvent.SHOW_CATALOG_DATA_1}" receive="handleShowCatData1(event.isDispatchedFromTopBar)"/>
+	<mate:Listener type="{SlideshowEvent.SHOW_CATALOG_DATA_2}" receive="handleShowCatData2(event.isDispatchedFromTopBar)"/>
+	
+	
+	<mate:Listener type="{SlideshowEvent.REMOVE_IMAGES}" receive="removeImages()"/>
+	<mate:Listener type="{ControlBarClickEvent.BLANK_VIEW}" receive="hideSlides()" />
+	<mate:Listener type="{ControlBarClickEvent.BLANK_SINGLE_PANE}" receive="toggleSinglePaneVisibiliity(event.panePosition)" />
+	<mate:Dispatcher id="myDispatcher"/>
+
+	<mx:Container id="box1Mask" backgroundColor="0x000000" includeInLayout="false" x="{box1.x}"  y="{box1.y}" width="{box1.width}" height="{box1.height}" cacheAsBitmap="true"/>
+	<mx:Container id="box2Mask" backgroundColor="0x000000" includeInLayout="false" x="{box2.x}"  y="{box2.y}" width="{box2.width}" height="{box2.height}" cacheAsBitmap="true"/>
+	<mx:HDividedBox id="myDividedBox"  width="100%" height="100%" dividerRelease="handleDividerRelease(event)" horizontalScrollPolicy="off" verticalScrollPolicy="off">
+		<mx:Box id="box1"  width="100%" height="100%" minHeight="260" minWidth="225" backgroundColor="0x000000" mask="{box1Mask}" horizontalScrollPolicy="off" verticalScrollPolicy="off">
+			<views:ImageHolder id="image1" isTopBarPinned="{this.isTopBarPinned}" paneLocation="left" panePosition="1" imageURL="" smoothBitmap="true"/>
+			<mx:Box id="busyBox1" width="100%" height="100%" visible="false" includeInLayout="false" verticalAlign="middle" horizontalAlign="center">
+				<!--<mx:Image source="{busyAnimation}"/>-->
+			</mx:Box>
+		</mx:Box>
+		<mx:Box id="box2" width="100%" height="100%" minHeight="260" minWidth="225" backgroundColor="0x000000" mask="{box2Mask}" horizontalScrollPolicy="off" verticalScrollPolicy="off">
+			<views:ImageHolder id="image2" isTopBarPinned="{this.isTopBarPinned}" paneLocation="right" panePosition="2" imageURL=""  smoothBitmap="true"/>			
+			<mx:Box id="busyBox2" width="100%" height="100%" visible="false" includeInLayout="false" verticalAlign="middle" horizontalAlign="center">
+				<!--<mx:Image source="{busyAnimation}"/>-->
+			</mx:Box>
+		</mx:Box>
+	</mx:HDividedBox>
+	<views:ImageDisplayBorder id="borderControls_1" isAppBarPinned="{this.isAppBarPinned}" isTopBarPinned="{this.isTopBarPinned}"  x="{box1.x}" y="{box1.y}" width="{box1.width}" height="{box1.height}" includeInLayout="false" paneLocation="left" panePosition="1" zoomInEnabled="{this.image1.zoomIn.enabled}" zoomOutEnabled="{this.image1.zoomOut.enabled}"/>
+	<views:ImageDisplayBorder id="borderControls_2" isAppBarPinned="{this.isAppBarPinned}" isTopBarPinned="{this.isTopBarPinned}"  x="{box2.x}" y="{box2.y}" width="{box2.width}" height="{box2.height}"  includeInLayout="false" paneLocation="right" panePosition="2" zoomInEnabled="{this.image2.zoomIn.enabled}" zoomOutEnabled="{this.image2.zoomOut.enabled}"/>
+	<flexlib:MDICanvas id="catPaneHolder1" includeInLayout="false" width="{borderControls_1.width}" height="{borderControls_1.height - (isTopBarPinned ? 0 : 35) - (isAppBarPinned ? 0 : 45)}" x="0" y="{borderControls_1.y + (isTopBarPinned ? 0: 35)}" horizontalScrollPolicy="off" verticalScrollPolicy="off" />
+	<flexlib:MDICanvas id="catPaneHolder2" includeInLayout="false" width="{borderControls_2.width}" height="{borderControls_2.height - (isTopBarPinned ? 0 : 35) - (isAppBarPinned ? 0 : 45)}" x="{borderControls_2.x}" y="{borderControls_2.y + (isTopBarPinned ? 0: 35)}" horizontalScrollPolicy="off" verticalScrollPolicy="off" />
+	<mx:Canvas id="blank1" height="{box1.height}" width="{box1.width}" backgroundColor="#000000" includeInLayout="false" visible="false"/>
+	<mx:Canvas id="blank2" height="{box2.height}" width="{box2.width}" x="{box2.x}" backgroundColor="#000000" includeInLayout="false" visible="false"/>
+
+</mx:Canvas>

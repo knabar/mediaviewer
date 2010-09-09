@@ -1,0 +1,187 @@
+/*
+//------------------------------
+//  CheckBox
+//------------------------------
+*/
+CheckBox {
+	disabledIcon: Embed(source="kingnarestyle.swf", symbol="CheckBox_disabledIcon");
+	downIcon: Embed(source="kingnarestyle.swf", symbol="CheckBox_downIcon");
+	overIcon: Embed(source="kingnarestyle.swf", symbol="CheckBox_overIcon");
+	selectedDisabledIcon: Embed(source="kingnarestyle.swf", symbol="CheckBox_selectedDisabledIcon");
+	selectedDownIcon: Embed(source="kingnarestyle.swf", symbol="CheckBox_selectedDownIcon");
+	selectedOverIcon: Embed(source="kingnarestyle.swf", symbol="CheckBox_selectedOverIcon");
+	selectedUpIcon: Embed(source="kingnarestyle.swf", symbol="CheckBox_selectedUpIcon");
+	upIcon: Embed(source="kingnarestyle.swf", symbol="CheckBox_upIcon");
+}
+
+/*
+//------------------------------
+//  CursorManager
+//------------------------------
+*/
+CursorManager{
+	busyCursor: Embed(source="kingnarestyle.swf", symbol="BusyCursor");
+	busyCursorBackground: Embed(source="kingnarestyle.swf",symbol="BusyCursor");
+}
+/*
+//------------------------------
+//  HDividedBox  
+//------------------------------
+*/
+HDividedBox {
+	dividerSkin: Embed(source="kingnarestyle.swf",symbol="DividedBox_HDividerSkin");
+	horizontalDividerCursor: Embed(source="kingnarestyle.swf",symbol="DividedBox_horizontalCursor");
+	backgroundColor: #2B2B2C;
+	dividerColor: #FFFFFF;
+	horizontalAlign: center;
+	horizontalGap: 6;
+	dividerThickness: 5;
+	dividerAlpha: .65;
+}
+
+/*
+//------------------------------
+//  VDividedBox...must use DividedBox due to bug in Flash running on Firefox running in Snow Leopard
+//------------------------------
+*/
+DividedBox {
+	dividerSkin: Embed(source="kingnarestyle.swf",symbol="DividedBox_VDividerSkin");
+	verticalDividerCursor: Embed(source="kingnarestyle.swf",symbol="DividedBox_verticalCursor");
+	backgroundColor: #2B2B2C;
+	dividerColor: #FFFFFF;
+	verticalGap: 6;
+	verticalAlign: middle;
+	dividerThickness: 5;
+	dividerAlpha: .65;
+}
+
+/*
+//------------------------------
+//  HScrollBar
+//------------------------------
+*/
+HScrollBar {
+
+	trackSkin: Embed(source="kingnarestyle.swf", symbol="ScrollBars_trackSkin");
+	thumbUpSkin: Embed(source="kingnarestyle.swf", symbol="ScrollBars_thumbUpSkin");
+	thumbOverSkin: Embed(source="kingnarestyle.swf", symbol="ScrollBars_thumbOverSkin");
+	thumbDownSkin: Embed(source="kingnarestyle.swf", symbol="ScrollBars_thumbDownSkin");
+	thumbIcon:	Embed(source="kingnarestyle.swf", symbol="ScrollBars_thumbIcon");
+	upArrowSkin:  ClassReference(null);
+	downArrowSkin:  ClassReference(null);
+}
+
+/*
+//------------------------------
+//  HSlider
+//------------------------------
+*/
+HSlider {
+	trackSkin: Embed(source="kingnarestyle.swf", symbol="SliderTrack_Skin");
+	showTrackHighlight: true;
+	thumbUpSkin: Embed(source="kingnarestyle.swf", symbol="SliderThumb_upSkin",scaleGridBottom="10",scaleGridLeft="1",scaleGridTop="1",scaleGridRight="10");
+	thumbOverSkin: Embed(source="kingnarestyle.swf", symbol="SliderThumb_overSkin",scaleGridBottom="10",scaleGridLeft="1",scaleGridTop="1",scaleGridRight="10");
+	thumbDownSkin: Embed(source="kingnarestyle.swf", symbol="SliderThumb_downSkin",scaleGridBottom="10",scaleGridLeft="1",scaleGridTop="1",scaleGridRight="10");
+	thumbDisabledSkin: Embed(source="kingnarestyle.swf", symbol="SliderThumb_disabledSkin",scaleGridBottom="10",scaleGridLeft="1",scaleGridTop="1",scaleGridRight="10");
+	trackHighlightSkin: Embed(source="kingnarestyle.swf", symbol="SliderHighlight_Skin");
+	dataTipOffset: 5;
+}
+
+/*
+//------------------------------
+//  Label
+//------------------------------
+*/
+Label {
+	color: #FFFFFF;
+	disabledColor: #BBBBBB;
+}
+
+/*
+//------------------------------
+//  TextArea
+//------------------------------
+*/
+TextArea {
+	color: #FFFFFF;
+	borderColor: #3B3B3B;
+	borderSkin: Embed(source="kingnarestyle.swf", symbol="TextAreaBackground");
+	backgroundAlpha: 1.0;
+	borderStyle: solid; 
+}
+
+/*
+//------------------------------
+//  ToolTip
+//------------------------------
+*/
+ToolTip { 
+	color: #FFFFFF;
+	backgroundColor: 0;
+	borderSkin: Embed(source="kingnarestyle.swf", symbol="ToolTip_Border");
+	paddingLeft: 10;
+	paddingRight: 10;
+}
+
+/*
+//------------------------------
+//  VRule
+//------------------------------
+*/
+VRule {
+	strokeColor: #000000;
+	shadowColor: #CCCCCC;
+	strokeWidth: 1;
+}
+
+/*
+//------------------------------
+//  VScrollBar
+//------------------------------
+*/
+VScrollBar {
+	trackUpSkin: Embed(source="kingnarestyle.swf", symbol="ScrollBars_trackSkin");
+	trackOverSkin: Embed(source="kingnarestyle.swf", symbol="ScrollBars_trackSkin");
+	trackDownSkin: Embed(source="kingnarestyle.swf", symbol="ScrollBars_trackSkin");
+	trackDisabledSkin: Embed(source="kingnarestyle.swf", symbol="ScrollBars_trackSkin");
+	
+	thumbUpSkin: Embed(source="kingnarestyle.swf", symbol="ScrollBars_thumbUpSkin");
+	thumbOverSkin: Embed(source="kingnarestyle.swf", symbol="ScrollBars_thumbOverSkin");
+	thumbDownSkin: Embed(source="kingnarestyle.swf", symbol="ScrollBars_thumbDownSkin");
+	thumbIcon:	Embed(source="kingnarestyle.swf", symbol="ScrollBars_thumbIcon");
+	
+	downArrowUpSkin: Embed(source="kingnarestyle.swf", symbol="ScrollBars_downArrowUpSkin");
+	downArrowOverSkin: Embed(source="kingnarestyle.swf", symbol="ScrollBars_downArrowOverSkin");
+	downArrowDownSkin: Embed(source="kingnarestyle.swf", symbol="ScrollBars_downArrowDownSkin");
+	downArrowDisabledSkin: Embed(source="kingnarestyle.swf", symbol="ScrollBars_downArrowDisabledSkin");
+	upArrowUpSkin: Embed(source="kingnarestyle.swf", symbol="ScrollBars_upArrowUpSkin");
+	upArrowOverSkin: Embed(source="kingnarestyle.swf", symbol="ScrollBars_upArrowOverSkin");
+	upArrowDownSkin: Embed(source="kingnarestyle.swf", symbol="ScrollBars_upArrowDownSkin");
+	upArrowDisabledSkin: Embed(source="kingnarestyle.swf", symbol="ScrollBars_upArrowDisabledSkin");
+	
+	/* upArrowSkin:  ClassReference(null);
+	downArrowSkin:  ClassReference(null); */
+}
+
+/*
+//------------------------------
+//  VSlider
+//------------------------------
+*/
+VSlider
+{
+	trackSkin: Embed(source="kingnarestyle.swf", symbol="SliderTrack_Skin");
+	showTrackHighlight: true;
+	thumbUpSkin: Embed(source="kingnarestyle.swf", symbol="SliderThumb_upSkin",scaleGridBottom="10",scaleGridLeft="1",scaleGridTop="1",scaleGridRight="10");
+	thumbOverSkin: Embed(source="kingnarestyle.swf", symbol="SliderThumb_overSkin",scaleGridBottom="10",scaleGridLeft="1",scaleGridTop="1",scaleGridRight="10");
+	thumbDownSkin: Embed(source="kingnarestyle.swf", symbol="SliderThumb_downSkin",scaleGridBottom="10",scaleGridLeft="1",scaleGridTop="1",scaleGridRight="10");
+	thumbDisabledSkin: Embed(source="kingnarestyle.swf", symbol="SliderThumb_disabledSkin",scaleGridBottom="10",scaleGridLeft="1",scaleGridTop="1",scaleGridRight="10");
+	trackHighlightSkin: Embed(source="kingnarestyle.swf", symbol="SliderHighlight_Skin");
+	dataTipOffset: 5;
+}
+
+.textBorder
+{
+	borderSkin: Embed(source="kingnarestyle.swf", symbol="TextInput_borderSkin"); 
+}
+/* End */

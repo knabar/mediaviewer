@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:ControlBar xmlns:mx="http://www.adobe.com/2006/mxml" 
+	xmlns:reflector="com.rictus.reflector.*"
+	width="100%" height="45"
+	paddingTop="0" paddingLeft="0" paddingBottom="0" paddingRight="0"
+	horizontalGap="0" verticalGap="0" verticalAlign="top"
+	styleName="AppMenu"
+	creationComplete="init()" >
+	
+	<mx:Script>
+		<![CDATA[
+			import org.mdid.mediaviewer.events.*;
+			
+			private function init():void {
+				switch (GeneralFactory.getInstance().runmode) {
+					case GeneralFactory.AIR_MODE :
+						this.currentState = "AIR";
+						break;
+					case GeneralFactory.WEB_MODE :
+						this.currentState = "Web";
+						break;
+					case GeneralFactory.ZINC_MODE :
+						this.currentState = "Zinc";
+						break;
+				}
+			}
+		]]>
+	</mx:Script>
+
+	<mx:HBox horizontalAlign="left" verticalAlign="middle" horizontalGap="2" width="100%" height="100%" paddingLeft="4">
+		<mx:Label text="" color="#FFFFFF" />
+	</mx:HBox>
+	<mx:HBox id="menuitems" horizontalAlign="right" verticalAlign="bottom" horizontalGap="0" width="270" height="100%" paddingTop="1" paddingLeft="4">
+	</mx:HBox>
+	<mx:HBox horizontalAlign="right" verticalAlign="top" horizontalGap="0" verticalGap="0" paddingTop="0" width="25">
+			<mx:LinkButton paddingTop="0" id="closebutton" enabled="true" styleName="CloseMenuButton" click="dispatchEvent(new ControlBarClickEvent(ControlBarClickEvent.ROLLDOWN_APPMENU))"/>
+	</mx:HBox>
+	<mx:states>
+		<mx:State name="Web">
+		<!--
+			<mx:AddChild relativeTo="{menuitems}" position="firstChild">
+				<mx:LinkButton label="Preferences" labelPlacement="bottom" enabled="true" styleName="Preferences" click="dispatchEvent(new ControlBarClickEvent(ControlBarClickEvent.ROLLDOWN_APPMENU))"/>
+			</mx:AddChild>
+		-->
+		</mx:State>	
+		<mx:State name="Zinc">
+		<!--
+			<mx:AddChild relativeTo="{menuitems}" position="firstChild">
+				<mx:LinkButton label="Preferences" labelPlacement="bottom" enabled="true" styleName="Preferences" click="dispatchEvent(new ControlBarClickEvent(ControlBarClickEvent.ROLLDOWN_APPMENU))"/>
+			</mx:AddChild>
+		-->
+		</mx:State>	
+		<mx:State name="AIR">
+		<!--
+			<mx:AddChild relativeTo="{menuitems}" position="firstChild">
+				<mx:LinkButton label="Preferences" labelPlacement="bottom" enabled="true" styleName="Preferences" click="dispatchEvent(new ControlBarClickEvent(ControlBarClickEvent.ROLLDOWN_APPMENU))"/>
+			</mx:AddChild>
+		-->
+			<mx:AddChild relativeTo="{menuitems}" position="firstChild">
+				<mx:LinkButton id="login" label="Login/Logout" labelPlacement="bottom" enabled="true" styleName="Login" click="dispatchEvent(new AppMenuClickEvent(AppMenuClickEvent.LOGIN)); dispatchEvent(new ControlBarClickEvent(ControlBarClickEvent.ROLLDOWN_APPMENU));"/>
+			</mx:AddChild>
+			<mx:AddChild relativeTo="{menuitems}" position="firstChild">
+				<mx:LinkButton id="slideshows" label="My Slideshows" labelPlacement="bottom" enabled="true" styleName="OpenSlideshow" click="dispatchEvent(new AppMenuClickEvent(AppMenuClickEvent.SLIDESHOWS)); dispatchEvent(new ControlBarClickEvent(ControlBarClickEvent.ROLLDOWN_APPMENU));"/>
+			</mx:AddChild>
+		</mx:State>	
+	</mx:states>
+
+</mx:ControlBar>

@@ -1,0 +1,653 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:ControlBar xmlns:mx="http://www.adobe.com/2006/mxml" 
+	xmlns="http://www.degrafa.com/2007"
+	xmlns:reflector="com.rictus.reflector.*"
+	xmlns:mate="http://mate.asfusion.com/"
+	xmlns:filters="flash.filters.*"
+	width="100%" height="45"
+	styleName="AppBar"
+	creationComplete="init()" paddingTop="6"
+	>
+	
+	<mx:Script>
+		<![CDATA[
+		import com.adobe.controls.FlexibleSliderThumb;
+		import org.mdid.mediaviewer.events.ControlBarClickEvent;
+		import org.mdid.mediaviewer.events.AppStatusEvent;
+		import org.mdid.mediaviewer.events.KeyboardPressEvent;
+		import org.mdid.mediaviewer.events.EdgeControlsEvent;
+		import org.mdid.mediaviewer.events.LoginEvent;
+		import org.mdid.mediaviewer.events.ScrubberEvent;
+		import org.mdid.mediaviewer.events.SlideshowEvent;
+		import mx.events.ResizeEvent;
+		import mx.events.SliderEvent;
+		import flash.events.MouseEvent;
+		import flash.events.TimerEvent;
+		import flash.utils.Timer;
+		import mx.core.Application;
+		
+		public var isBarRaised:Boolean = true;
+    	[Embed(source="/assets/skin.swf", symbol="SliderThumb_disabled")]
+    	[Bindable] public var SliderThumbShadow:Class;
+		[Bindable] public var isPlaying:Boolean = false;
+		[Bindable] public var countDown:String;
+		[Bindable] public var delayValues:Array = new Array(["1s",1],["2s",2],["3s",3],["4s",4],["5s",5],["6s",6],["7s",7],["8s",8],
+		["9s",9],["10s",10],["11s",11],["12s",12],["13s",13],["14s",14],["15s",15],["20s",20],["25s",25],["30s",30],
+		["45s",45],["1m 0s",60],["1m 15s",75],["1m 30s",90],["1m 45s",105],["2m 0s",120],["2m 15s",135],["2m 30s",150],["2m 45s",165],
+		["3m 0s",180],["3m 15s",195],["3m 30s",210],["3m 45s",225],["4m 0s",240],["4m 15s",255],["4m 30s",270],["4m 45s",285],
+		["5m",300],["6m",360],["7m",420],["8m",480],["9m",540],["10m",600],["11m",660],["12m",720],["13m",780],["14m",840],["15m",900],
+		["16m",960],["17m",1020],["18m",1080],["19m",1140],["20m",1200],["25m",1800],["30m",1800],["35m",2100],["40m",2400],["45m",2700],
+		["50m",3000],["55m",3300],["1h 0m",3600],["1h 15m",4500],["1h 30m",5400],["1h 45m",6300],["2h 0m",7200]);
+		//,["2h 15m",8100],["2h 30m",9000],["2h 45m",9900],["3h 0m",10800],["3h 15m",11700],["3h 30m",12600],["3h 45m",13500],["4h 0m",14400],["4h 15m",15300],
+		//["4h 30m",16200],["4h 45m",17100],["5h",18000],["6h",21600],["7h",25200],["8h",28800],["9h",32400],["10h",36000],
+		//["11h",39600],["12h",43200]);
+		
+		private function formatDelayLabel(theValue:int):String {
+			return delayValues[theValue][0];
+		}
+		
+		public var isMenuRaised:Boolean = false;
+		private function handleMenu():void {
+			var myEventType:String = isMenuRaised ? ControlBarClickEvent.ROLLDOWN_APPMENU : ControlBarClickEvent.ROLLUP_APPMENU;
+			var controlBarClickEvent:ControlBarClickEvent = new ControlBarClickEvent(myEventType);
+			myDispatcher.dispatchEvent(controlBarClickEvent);
+		}
+		private var paneUnderControl:int = 1;
+		private var currentIdx1:int;
+		private var currentIdx2:int;
+		private function updateButtonStatus(status:Object):void {
+			this.currentIdx1 = status.currentIdx1;
+			this.currentIdx2 = status.currentIdx2;
+			if (!isScrubBarThumbDown) {
+				if (this.paneUnderControl == 1 && this.scrubBar.value != status.currentIdx1 + 1) {
+					this.scrubBar.value = status.currentIdx1 + 1;
+				} else if (this.paneUnderControl == 2 && this.scrubBar.value != status.currentIdx2 + 1) {
+					this.scrubBar.value = status.currentIdx2 + 1;
+				}
+			}
+			this.isPlaying = status.slideshowIsPlaying
+			this.first.enabled = this.paneUnderControl == 1 ? status.firstIsEnabled1 : status.firstIsEnabled2;
+			this.previous.enabled = this.paneUnderControl == 1 ? status.previousIsEnabled1 : status.previousIsEnabled2;
+			this.next.enabled = this.paneUnderControl == 1 ? status.nextIsEnabled1 : status.nextIsEnabled2;
+			this.last.enabled = this.paneUnderControl == 1 ? status.lastIsEnabled1 : status.lastIsEnabled2;
+			this.play.enabled = this.paneUnderControl == 1 ? status.playIsEnabled1 : status.playIsEnabled2;
+			this.blankscreen.enabled = status.screensEnabled;
+			this.singleHsplit.enabled = status.screensEnabled;
+			this.singleVsplit.enabled = status.screensEnabled;
+			this.singlescreen.enabled = status.screensEnabled;
+			this.first.useHandCursor = this.first.enabled;
+			this.previous.useHandCursor = this.previous.enabled;
+			this.next.useHandCursor = this.next.enabled;
+			this.last.useHandCursor = this.last.enabled;
+			this.play.useHandCursor = this.play.enabled;
+			this.blankscreen.useHandCursor = this.blankscreen.enabled;
+			this.singleHsplit.useHandCursor = this.singleHsplit.enabled;
+			this.singleVsplit.useHandCursor = this.singleVsplit.enabled;
+			this.singlescreen.useHandCursor = this.singlescreen.enabled;
+		}
+		[Bindable] public var capacityHeight:int = 14;
+		[Bindable] public var numSlides:int = 0;
+		[Bindable] public var firstRectWidth:Number = 0;
+		[Bindable] public var secondRectWidth:Number = 0;
+		[Bindable] public var slidesBarWidth:Number = 200;
+		[Bindable] public var divisionWidth:Number = 4;
+		[Bindable] public var numImagesCached:Number;
+		private var sliderThumbVestigeOffset:int = 0;
+		private var resizeDelayTimer:Timer = new Timer(100, 1);
+		private function init():void {
+			setPinning(this.isBarPinned);
+			resizeDelayTimer.addEventListener(TimerEvent.TIMER, resizeSurface);
+			delayTimer.addEventListener(TimerEvent.TIMER, handleDelayTimerEvent);
+			resizeSurface();
+			this.surfaceHolder.addEventListener(MouseEvent.CLICK, handleSurfaceClicks);
+			Application.application.addEventListener(ResizeEvent.RESIZE, handleResize);
+			if (GeneralFactory.getInstance().runmode == GeneralFactory.AIR_MODE) {
+				this.rightHBox.width += 62;
+				this.slidesBarWidth -= 62;
+				this.dualmonitors.includeInLayout = true;
+				this.dualmonitors.visible = true;
+				this.menubutton.enabled = true;
+				this.menubutton.includeInLayout = true;
+				this.menubutton.visible = true;
+			}
+		}
+		[Bindable] public var isBarPinned:Boolean;
+		private function setPinning(theIsBarPinned:Boolean):void {
+			var myEventType:String = theIsBarPinned ? ControlBarClickEvent.PIN_APPBAR : ControlBarClickEvent.UNPIN_APPBAR;
+			var controlBarClickEvent:ControlBarClickEvent = new ControlBarClickEvent(myEventType);
+			isBarPinned = theIsBarPinned;
+			this.pinbutton.styleName = isBarPinned ? "PinnedButton" : "PinButton";
+			this.myDispatcher.dispatchEvent(controlBarClickEvent);
+		}
+		private function resizeSurface(e:TimerEvent = null):void {
+			if (numSlides <= 0 || slidesBarWidth == Application.application.width - this.leftHBox.width - this.rightHBox.width) return;
+			slidesBarWidth = Application.application.width - this.leftHBox.width - this.rightHBox.width;
+			if (GeneralFactory.getInstance().runmode == GeneralFactory.WEB_MODE) {
+				if (slidesBarWidth < 200) slidesBarWidth = 200;
+			} else {
+				if (slidesBarWidth < 138) slidesBarWidth = 138;
+			}
+			divisionWidth = slidesBarWidth / numSlides;
+			sliderThumbVestigeOffset = (divisionWidth < this.SliderThumbVestige.width) ? 1 : 0;
+			this.scrubBar.width = slidesBarWidth+(19-divisionWidth);
+			if (divisionWidth < 4) {
+				this.verticalLinesWhite.stroke = null;
+				this.verticalLinesDark.stroke = null;
+			} else {
+				this.verticalLinesWhite.stroke = this.whiteStroke;
+				if (divisionWidth < 8) {
+					this.verticalLinesDark.stroke = null;
+				} else {
+					this.verticalLinesDark.stroke = this.darkStroke;
+				}
+			}
+			if (!this.scrubBar.visible) this.scrubBar.visible = true;
+		}
+		private function handleResize(e:ResizeEvent=null):void {
+			if (GeneralFactory.getInstance().runmode == GeneralFactory.AIR_MODE) {
+				//fixes a timing bug in AIR 1.5
+				this.resizeDelayTimer.start();
+			} else {
+				resizeSurface();
+			}
+		}
+		private function handleSurfaceClicks(e:MouseEvent):void {
+			if (this.capacitySurface.hitTestPoint(e.stageX, e.stageY, false)) {
+				var xOffset:int = e.localX - this.divisionRect.x;
+				var targetSlideIdx:int = Math.floor(xOffset/divisionWidth);
+				if (targetSlideIdx != this.scrubBar.value-1 && targetSlideIdx < numImagesCached) {
+					var myScrubBarClickedEvent:ControlBarClickEvent = new ControlBarClickEvent(ControlBarClickEvent.GO_TO_SLIDE);
+					myScrubBarClickedEvent.panePosition = this.paneUnderControl;
+					myScrubBarClickedEvent.slideIdx = targetSlideIdx;
+					myDispatcher.dispatchEvent(myScrubBarClickedEvent);		
+				}
+			}
+		}
+		private var isScrubBarThumbDown:Boolean = false;
+		private function handleSliderEvents(e:SliderEvent):void {
+			var offsetX:int = ((e.value-1) * divisionWidth) + Math.floor(divisionWidth/2);
+			var targetX:int = this.capacitySurface.contentToGlobal(new Point(this.x, 0)).x + offsetX;
+			var slideIdx:int = e.value - 1;
+			switch(e.type){
+				case SliderEvent.CHANGE :
+					var myScrubberEvent:ScrubberEvent = new ScrubberEvent(ScrubberEvent.MOVE_PREVIEW);
+					myScrubberEvent.slideIdx = slideIdx;
+					myScrubberEvent.targetX = targetX;
+					myDispatcher.dispatchEvent(myScrubberEvent);
+				break;
+				case SliderEvent.THUMB_PRESS :
+					isScrubBarThumbDown = true;
+					var myScrubberEvent2:ScrubberEvent = new ScrubberEvent(ScrubberEvent.SHOW_PREVIEW);
+					myScrubberEvent2.slideIdx = slideIdx;
+					myScrubberEvent2.targetX = targetX;
+					myDispatcher.dispatchEvent(myScrubberEvent2);
+					this.SliderThumbVestige.x = offsetX - 8 + sliderThumbVestigeOffset;
+					this.SliderThumbVestige.y = 16;
+					this.SliderThumbVestige.visible = true;
+				break;
+				case SliderEvent.THUMB_RELEASE :
+					isScrubBarThumbDown = false;
+					this.SliderThumbVestige.visible = false;
+					var myScrubberEvent3:ScrubberEvent = new ScrubberEvent(ScrubberEvent.HIDE_PREVIEW);
+					myScrubberEvent3.slideIdx = slideIdx;
+					myScrubberEvent3.targetX = targetX;
+					myDispatcher.dispatchEvent(myScrubberEvent3);
+					if (e.value > this.numImagesCached) {
+						e.currentTarget.value = 1 + (this.paneUnderControl == 1 ? this.currentIdx1 : this.currentIdx2);
+					} else {
+						var myControlBarEvent2:ControlBarClickEvent = new ControlBarClickEvent(ControlBarClickEvent.GO_TO_SLIDE);
+						myControlBarEvent2.panePosition = this.paneUnderControl;
+						myControlBarEvent2.slideIdx = slideIdx;
+						myDispatcher.dispatchEvent(myControlBarEvent2);		
+					}
+				break;
+			}
+		}
+		private function setNumSlides(theNumber:int):void {
+			this.numSlides = theNumber;
+			this.geoComposer.graphicsTarget = [this.capacitySurface];
+			this.geoComposer.drawToTargets();
+			resizeSurface();
+		}
+		private function startStopSlideshow(eventType:String):void {
+			isPlaying = eventType == ControlBarClickEvent.START_SHOW ? true : false;
+			var myEvent:ControlBarClickEvent = new ControlBarClickEvent(eventType);
+			myEvent.delayInSeconds = delayValues[this.delay.value][1];
+			myEvent.panePosition = this.paneUnderControl;
+			myDispatcher.dispatchEvent(myEvent);
+		}
+		private var delayTimer:Timer = new Timer(150, 0);
+		private function adjustDelayStepper(direction:String):void {
+			var targetVal:int = (direction == "increase") ? this.delay.value + 1 : this.delay.value - 1;
+			if (targetVal >= this.delay.minimum && targetVal <= this.delay.maximum) {
+				this.delay.value = targetVal;
+			} else {
+				delayTimer.reset();
+			}
+		}
+		private function handleDelayTimerEvent(e:TimerEvent):void {
+			if (!this.isPlaying) {
+				adjustDelayStepper(currentDirection);
+				if (delayTimer.delay > 30) delayTimer.delay -= 10;
+			}
+		}
+		private var currentDirection:String;
+		private function  handleDelayTimer(e:MouseEvent):void {
+			currentDirection = (e.currentTarget.id == "uparrow") ? "increase" : "decrease";
+			if (e.type == MouseEvent.MOUSE_DOWN) {
+				delayTimer.delay = 150;
+				delayTimer.start();
+			} else {
+				if (delayTimer.currentCount < 1) {
+					adjustDelayStepper(currentDirection);
+				}
+				delayTimer.reset();
+			}
+		}
+		private function setControlsToColor(theColor:String = "blue"):void {
+			theColor = theColor.toLowerCase();
+			if (theColor == "red") {
+				this.paneControl.styleName = "YinYangFlipped";
+				this.first.styleName = "FirstP2";
+				this.previous.styleName = "PreviousP2";
+				this.play.styleName = "PlayP2";
+				this.pause.styleName = "PauseP2";
+				this.next.styleName = "NextP2";
+				this.last.styleName = "LastP2";
+				this.geoComposer.geometry[3].fill = this.geoComposer.fills[1]; //set to salmonColor
+				this.scrubBar.styleName = "ScrubBarSliderRed";
+			} else if (theColor == "blue") {
+				this.paneControl.styleName = "YinYang";
+				this.first.styleName = "First";
+				this.previous.styleName = "Previous";
+				this.play.styleName = "Play";
+				this.pause.styleName = "Pause";
+				this.next.styleName = "Next";
+				this.last.styleName = "Last";
+				this.geoComposer.geometry[3].fill = this.geoComposer.fills[0]; //set to lightBlue
+				this.scrubBar.styleName = "ScrubBarSliderBlue";		
+			}
+		}
+		private function togglePaneControl():void {
+			if (this.isPlaying) startStopSlideshow(ControlBarClickEvent.STOP_SHOW);
+			if (this.paneControl.styleName == "YinYang") {
+				setControlsToColor("red");
+				paneUnderControl = 2;
+			} else {
+				setControlsToColor("blue");
+				paneUnderControl = 1;
+			}
+			if (!isScrubBarThumbDown) {
+				if (this.paneUnderControl == 1 && this.scrubBar.value != currentIdx1 + 1) {
+					this.scrubBar.value = currentIdx1 + 1;
+				} else if (this.paneUnderControl == 2 && this.scrubBar.value != currentIdx2 + 1) {
+					this.scrubBar.value = currentIdx2 + 1;
+				}
+			} 
+			this.myDispatcher.dispatchEvent(new ControlBarClickEvent(ControlBarClickEvent.REFRESH_BUTTON_STATES));
+		}
+		private var isPairwiseModeEnabled:Boolean = false;
+		private function setPairwiseAdvance(theTruth:Boolean):void {
+			if (this.isPlaying) startStopSlideshow(ControlBarClickEvent.STOP_SHOW);
+			this.isPairwiseModeEnabled = theTruth;
+			this.paneControl.enabled = !this.isPairwiseModeEnabled;
+			var myEvent:ControlBarClickEvent = new ControlBarClickEvent(ControlBarClickEvent.TOGGLE_PAIRWISE_MODE);
+			myEvent.enablePairwiseMode = this.isPairwiseModeEnabled;
+			if (isPairwiseModeEnabled) {
+				this.pairwiseLinker.styleName = "PairwiseUnlinked";
+				this.setControlsToColor("blue");
+				paneUnderControl = 1;
+			} else {
+				this.pairwiseLinker.styleName = "PairwiseLinked";
+			}
+			this.myDispatcher.dispatchEvent(myEvent);
+		}
+		private var lastScreenEventType:String = ControlBarClickEvent.SINGLE_PANE;
+		private function handleScreenSplit(eType:String):void {
+			if (eType == lastScreenEventType) return;
+			if (this.isPlaying) startStopSlideshow(ControlBarClickEvent.STOP_SHOW);
+			switch(eType) {
+				case ControlBarClickEvent.DOUBLE_PANE_H :
+				case ControlBarClickEvent.DOUBLE_PANE_V :
+					if (lastScreenEventType == ControlBarClickEvent.SINGLE_PANE) {
+						this.paneControl.enabled = true;
+						this.paneControl.styleName = "YinYang";
+						this.pairwiseLinker.enabled = this.numSlides > 3 ? true : false;
+						this.pairwiseLinker.styleName = "PairwiseLinked";
+						paneUnderControl = 1;
+					}
+				break;
+				case ControlBarClickEvent.SINGLE_PANE :
+					this.pairwiseLinker.styleName = "PairwiseLinked";
+					this.pairwiseLinker.enabled = false;
+					if (this.paneControl.styleName != "YinYang") {
+						setControlsToColor("blue");
+						paneUnderControl = 1;
+					}
+					this.setPairwiseAdvance(false);
+					this.paneControl.enabled = false;
+					this.pairwiseLinker.enabled = false;
+				break;
+			}
+			lastScreenEventType = eType;
+			if (!isScrubBarThumbDown) {
+				if (this.paneUnderControl == 1 && this.scrubBar.value != currentIdx1 + 1) {
+					this.scrubBar.value = currentIdx1 + 1;
+				} else if (this.paneUnderControl == 2 && this.scrubBar.value != currentIdx2 + 1) {
+					this.scrubBar.value = currentIdx2 + 1;
+				}
+			}
+			this.myDispatcher.dispatchEvent(new ControlBarClickEvent(eType));
+		}
+		private function handleNavigationClick(eType:String, theTargetPanePosition:int = -1):void {
+			var myEvent:ControlBarClickEvent = new ControlBarClickEvent(eType);
+			myEvent.panePosition = theTargetPanePosition < 1 ? this.paneUnderControl : theTargetPanePosition;
+			this.myDispatcher.dispatchEvent(myEvent);
+		}
+		private function handleProxyEvents(eType:String, isShiftKeyDown:Boolean, isControlKeyDown:Boolean):void {
+			switch(eType) {
+				case ControlBarClickEvent.BLANK_VIEW :
+					var myCBarClickEvent:ControlBarClickEvent = new ControlBarClickEvent(ControlBarClickEvent.BLANK_VIEW);
+					var myCBarClickEvent1:ControlBarClickEvent = new ControlBarClickEvent(ControlBarClickEvent.BLANK_SINGLE_PANE);
+					var myCBarClickEvent2:ControlBarClickEvent = new ControlBarClickEvent(ControlBarClickEvent.BLANK_SINGLE_PANE);
+					myCBarClickEvent1.panePosition = 1;
+					myCBarClickEvent2.panePosition = 2;
+					if (isControlKeyDown) {
+						if (this.paneControl.enabled) {
+							this.myDispatcher.dispatchEvent(myCBarClickEvent1);	
+							this.myDispatcher.dispatchEvent(myCBarClickEvent2);
+						} else {
+							this.myDispatcher.dispatchEvent(myCBarClickEvent);							
+						}
+					} else if (isShiftKeyDown) {
+						if (this.paneControl.enabled) {
+							this.myDispatcher.dispatchEvent(myCBarClickEvent2);	
+						} else {
+							this.myDispatcher.dispatchEvent(myCBarClickEvent);
+						}
+					} else {
+						if (this.paneControl.enabled && Application.application.stage.displayState == StageDisplayState.FULL_SCREEN && GeneralFactory.getInstance().runmode == GeneralFactory.WEB_MODE) {
+							this.myDispatcher.dispatchEvent(this.paneUnderControl == 1 ? myCBarClickEvent1 : myCBarClickEvent2);
+						} else {
+							this.myDispatcher.dispatchEvent(myCBarClickEvent);
+						}					
+					}
+				break;
+				case SlideshowEvent.SHOW_CATALOG_DATA:
+					var mySlideshowEvent1:SlideshowEvent = new SlideshowEvent(SlideshowEvent.SHOW_CATALOG_DATA_1);
+					var mySlideshowEvent2:SlideshowEvent = new SlideshowEvent(SlideshowEvent.SHOW_CATALOG_DATA_2);
+					mySlideshowEvent1.isDispatchedFromTopBar = false;
+					mySlideshowEvent2.isDispatchedFromTopBar = false;
+					if (isControlKeyDown) {
+						this.myDispatcher.dispatchEvent(mySlideshowEvent1);
+						if (this.paneControl.enabled) {
+							this.myDispatcher.dispatchEvent(mySlideshowEvent2);	
+						}
+					} else if (isShiftKeyDown) {
+						if (this.paneControl.enabled) {
+							this.myDispatcher.dispatchEvent(mySlideshowEvent2);	
+						} else {
+							this.myDispatcher.dispatchEvent(mySlideshowEvent1);
+						}
+					} else {
+						if (this.paneControl.enabled && Application.application.stage.displayState == StageDisplayState.FULL_SCREEN && GeneralFactory.getInstance().runmode == GeneralFactory.WEB_MODE) {
+							this.myDispatcher.dispatchEvent(this.paneUnderControl == 1 ? mySlideshowEvent1 : mySlideshowEvent2);
+						} else {
+							this.myDispatcher.dispatchEvent(mySlideshowEvent1);
+						}					
+					}
+				break;
+				case ControlBarClickEvent.SINGLE_PANE :
+				case ControlBarClickEvent.DOUBLE_PANE_H :
+				case ControlBarClickEvent.DOUBLE_PANE_V :
+					if (eType == ControlBarClickEvent.SINGLE_PANE && !this.singlescreen.enabled) return;
+					handleScreenSplit(eType);
+				break;
+				case ControlBarClickEvent.FIRST_SLIDE:
+				case ControlBarClickEvent.PREVIOUS_SLIDE:
+				case ControlBarClickEvent.NEXT_SLIDE:
+				case ControlBarClickEvent.LAST_SLIDE:
+					if (eType == ControlBarClickEvent.FIRST_SLIDE && !this.first.enabled) return;
+					if (eType == ControlBarClickEvent.PREVIOUS_SLIDE && !this.previous.enabled) return;
+					if (eType == ControlBarClickEvent.NEXT_SLIDE && !this.next.enabled) return;
+					if (eType == ControlBarClickEvent.LAST_SLIDE && !this.last.enabled) return;
+					if (isControlKeyDown) {
+						handleNavigationClick(eType, 1);
+						if (this.paneControl.enabled) {
+							handleNavigationClick(eType, 2);	
+						}
+					} else if (isShiftKeyDown) {
+						if (this.paneControl.enabled) {
+							handleNavigationClick(eType, 2);	
+						} else {
+							handleNavigationClick(eType, 1);
+						}
+					} else {
+						if (this.paneControl.enabled && Application.application.stage.displayState == StageDisplayState.FULL_SCREEN && GeneralFactory.getInstance().runmode == GeneralFactory.WEB_MODE) {
+							handleNavigationClick(eType);
+						} else {
+							handleNavigationClick(eType, 1);
+						}					
+					}
+				break;
+				case ControlBarClickEvent.TOGGLE_PANES :
+					if (this.paneControl.enabled) togglePaneControl();
+				break;
+				case EdgeControlsEvent.ZOOMIN:
+				case EdgeControlsEvent.ZOOMOUT:
+					var myEdgeEvent1:EdgeControlsEvent = new EdgeControlsEvent(eType);
+					var myEdgeEvent2:EdgeControlsEvent = new EdgeControlsEvent(eType);
+					myEdgeEvent1.panePosition = 1;
+					myEdgeEvent2.panePosition = 2;
+					if (isControlKeyDown) {
+						this.myDispatcher.dispatchEvent(myEdgeEvent1);
+						if (this.paneControl.enabled) {
+							this.myDispatcher.dispatchEvent(myEdgeEvent2);	
+						}
+					} else if (isShiftKeyDown) {
+						if (this.paneControl.enabled) {
+							this.myDispatcher.dispatchEvent(myEdgeEvent2);	
+						} else {
+							this.myDispatcher.dispatchEvent(myEdgeEvent1);
+						}
+					} else {
+						if (this.paneControl.enabled && Application.application.stage.displayState == StageDisplayState.FULL_SCREEN && GeneralFactory.getInstance().runmode == GeneralFactory.WEB_MODE) {
+							this.myDispatcher.dispatchEvent(this.paneUnderControl == 1 ? myEdgeEvent1 : myEdgeEvent2);
+						} else {
+							this.myDispatcher.dispatchEvent(myEdgeEvent1);
+						}					
+					}
+				break;
+			}
+		}
+		]]>
+	</mx:Script>
+
+	<!-- Listeners and Dispatchers  -->
+	<mate:Listener type="{SlideshowEvent.SLIDESHOW_LOAD_COMPLETE}" receive="setNumSlides(event.numSlides)" />
+	<mate:Listener type="{LoginEvent.LOGOUT}" receive="setNumSlides(0)"/>
+	<mate:Listener type="{AppStatusEvent.SYNC_BUTTON_STATES}" receive="updateButtonStatus(event.synButtonObj)" />
+	<mate:Listener type="{AppStatusEvent.HAVE_MULTIPLE_SCREENS}" receive="this.dualmonitors.enabled = (GeneralFactory.getInstance().runmode != GeneralFactory.WEB_MODE);" />
+	<mate:Listener type="{ControlBarClickEvent.DOUBLE_PANE_H}" receive="handleScreenSplit(ControlBarClickEvent.DOUBLE_PANE_H)" />
+	<mate:Listener type="{ControlBarClickEvent.DOUBLE_PANE_V}" receive="handleScreenSplit(ControlBarClickEvent.DOUBLE_PANE_V)" />
+	<mate:Listener type="{ControlBarClickEvent.SINGLE_PANE}" receive="handleScreenSplit(ControlBarClickEvent.SINGLE_PANE)" />
+	<mate:Listener type="{KeyboardPressEvent.CONTROL_BAR_PROXY_CLICK}" receive="handleProxyEvents(event.proxyEventType, event.isShiftKeyDown, event.isControlKeyDown)" />
+	<mate:Dispatcher id="myDispatcher" />
+	<!-- Graphics and Paint for the inner bars and background -->
+	<GeometryComposition id="geoComposer">
+		<fills>
+			<SolidFill
+			    id="lightBlue"
+			    color="#62ABCD"
+			    alpha=".9"/>
+			<SolidFill
+			    id="salmonColor"
+			    color="#9D5A58"/>
+			<SolidFill
+			    id="orangeColor"
+			    alpha=".65"
+			    color="#CC5500"/>
+			<SolidFill
+			    id="lightGray"
+			    alpha=".55"
+			    color="#676"/>
+			<LinearGradientFill id="highlight" angle="90">
+				<GradientStop
+				    color="#FFF"
+				    alpha=".3"/>
+				<GradientStop
+				    color="#FFF"
+				    alpha=".05"/>
+			</LinearGradientFill>
+			<LinearGradientFill id="shadow" angle="90" blendMode="multiply">
+				<GradientStop
+				    color="#000"
+				    alpha=".01"/>
+				<GradientStop
+				    color="#000"
+				    alpha=".5"/>
+			</LinearGradientFill>
+			<LinearGradientFill id="inset" angle="90">
+				<GradientStop
+				    color="#222"
+				    alpha=".3"
+				    ratio="0"
+				    ratioUnit="pixels"/>
+				<GradientStop
+				    color="#CCC"
+				    alpha=".4"
+				    ratio="16"
+				    ratioUnit="pixels"/>
+			</LinearGradientFill>
+		</fills>
+		<strokes>
+			<SolidStroke
+			    id="whiteStroke"
+			    color="#CCC"
+			    weight="1"
+			    alpha=".15"/>
+			<SolidStroke
+			    id="darkStroke"
+			    color="#000"
+			    weight="1"
+			    alpha=".2"/>
+			<SolidStroke
+			    id="orangeStroke"
+			    color="#994400"
+			    weight="2"/>
+		</strokes>
+		<RegularRectangle id="insetRect"
+		    width="{slidesBarWidth}"
+		    height="{capacityHeight}"
+		    fill="{inset}"/>	            
+		<RegularRectangle id="divisionRect" 
+			width="{numImagesCached * divisionWidth}"
+			height="{capacityHeight}"
+			fill="{lightGray}"/>
+		<RegularRectangle id="secondRect"
+		    width="{secondRectWidth}"
+		    height="{capacityHeight}"
+		    fill="{lightBlue}"/>    
+		<RegularRectangle id="firstRect"
+		    y="1"
+		    width="{this.scrubBar.value * divisionWidth}"
+		    height="{capacityHeight-2}"
+		    fill="{lightBlue}"/>
+		<RegularRectangle id="shadowRect"
+		    width="{slidesBarWidth}"
+		    height="{capacityHeight}"
+		    fill="{shadow}"/>
+		<VerticalLineRepeater  id="verticalLinesDark"
+		    x="{divisionWidth}"
+		    y="0"
+		    y1="{capacityHeight}"
+		    moveOffsetX="{divisionWidth}"
+		    count="{numSlides}"
+		    stroke="{darkStroke}"/>
+		<VerticalLineRepeater id="verticalLinesWhite"
+		    x="{divisionWidth+1}"
+		    y="0"
+		    y1="{capacityHeight}"
+		    moveOffsetX="{divisionWidth}"
+		    count="{numSlides}"
+		    stroke="{whiteStroke}"/>
+		<RoundedRectangleComplex
+		    id="highlightRect"
+		    bottomLeftRadius="10"
+		    bottomRightRadius="10"
+		    width="{slidesBarWidth}"
+		    height="{capacityHeight/2}"
+		    fill="{highlight}"/>
+	</GeometryComposition>
+	<mx:HBox id="leftHBox" horizontalAlign="left" verticalAlign="middle" horizontalGap="2" width="270" horizontalScrollPolicy="off" verticalScrollPolicy="off">
+		<mx:LinkButton id="first"  styleName="First" paddingTop="0" click="handleNavigationClick(ControlBarClickEvent.FIRST_SLIDE)"/>
+		<mx:LinkButton id="previous" styleName="Previous" paddingTop="0" click="handleNavigationClick(ControlBarClickEvent.PREVIOUS_SLIDE)"/>
+		<mx:LinkButton id="play" includeInLayout="{!isPlaying}" visible="{!isPlaying}" styleName="Play" paddingTop="0" click="startStopSlideshow(ControlBarClickEvent.START_SHOW)"/>
+		<mx:LinkButton id="pause" includeInLayout="{isPlaying}" visible="{isPlaying}" enabled="true" styleName="Pause" paddingTop="0" click="startStopSlideshow(ControlBarClickEvent.STOP_SHOW)"/>
+		<mx:LinkButton id="next" styleName="Next" paddingTop="0" click="handleNavigationClick(ControlBarClickEvent.NEXT_SLIDE)"/>
+		<mx:LinkButton id="last" styleName="Last" paddingTop="0" click="handleNavigationClick(ControlBarClickEvent.LAST_SLIDE)"/>
+		<mx:Spacer width="4"/>
+		<mx:VBox verticalAlign="middle" verticalGap="0" horizontalAlign="center" width="20" height="26" paddingRight="0" paddingTop="2">
+			<mx:LinkButton id="uparrow" enabled="{!isPlaying}" useHandCursor="{!isPlaying}" styleName="UpArrow" width="20" height="13" mouseDown="handleDelayTimer(event)" mouseUp="handleDelayTimer(event)"/>
+			<mx:LinkButton id="downarrow" enabled="{!isPlaying}" useHandCursor="{!isPlaying}" styleName="DownArrow" width="20" height="13" mouseDown="handleDelayTimer(event)" mouseUp="handleDelayTimer(event)"/>
+		</mx:VBox>
+		<mx:VBox verticalAlign="middle" verticalGap="-8" horizontalAlign="left">
+			<mx:Label text="{countDown}" includeInLayout="{isPlaying}" visible="{isPlaying}" styleName="DelayCaption" paddingTop="2" paddingLeft="6"/>
+			<mx:Label text="DELAY: {formatDelayLabel(delay.value)}" includeInLayout="{!isPlaying}" visible="{!isPlaying}" styleName="DelayCaption" paddingTop="2" paddingLeft="6"/>
+			<mx:HSlider id="delay" width="88" minimum="4" enabled="{!isPlaying}" value="14" maximum="{delayValues.length-1}" snapInterval="1"  showDataTip="false" liveDragging="true"/>
+		</mx:VBox>
+	</mx:HBox>
+	<mx:VBox height="32" verticalAlign="top" paddingBottom="4" paddingLeft="0" paddingRight="3">
+		<mx:VRule height="100%" alpha=".25" styleName="AppBarVerticalRule"/>
+	</mx:VBox>
+	<mx:VBox id="surfaceHolder"  horizontalAlign="center" verticalAlign="middle" verticalGap="-5" width="100%" paddingTop="3">
+		<!-- Masked Surface and Filter for the Capacity Indicator -->
+		<Surface
+		    id="capacitySurface"
+		    horizontalCenter="0"
+		    width="{slidesBarWidth}"
+		    height="19"
+		    mask="{roundMask}">
+		    <GeometryGroup
+		        id="roundMask">
+		        <RoundedRectangleComplex
+		            width="{slidesBarWidth}"
+		            height="{capacityHeight}"
+		            bottomLeftRadius="4"
+		            bottomRightRadius="4"
+		            topLeftRadius="4"
+		            topRightRadius="4"
+		            fill="{lightBlue}"/>
+		    </GeometryGroup>	    
+		    <filters>
+		        <filters:GlowFilter
+		            color="#000000"
+		            alpha=".1"
+		            blurX="4"
+		            blurY="4"
+		            inner="true"
+		            quality="6"/>
+		    </filters>
+		</Surface>
+		<mx:Image id="SliderThumbVestige" source="{SliderThumbShadow}" includeInLayout="false" alpha=".75" visible="false"/>
+		<mx:HSlider id="scrubBar" visible="false" styleName="ScrubBarSliderBlue" allowTrackClick="false" liveDragging="true" thumbPress="handleSliderEvents(event)" change="handleSliderEvents(event)" thumbRelease="handleSliderEvents(event)" sliderThumbClass="{com.adobe.controls.FlexibleSliderThumb}" showDataTip="false"  height="16" width="100" minimum="1" maximum="{numSlides}" snapInterval="1"/>
+	</mx:VBox>
+	<mx:HBox id="rightHBox" horizontalAlign="left" verticalAlign="middle" horizontalGap="4" width="276">
+		<mx:LinkButton id="paneControl" enabled="false" styleName="YinYang" paddingTop="0" click="togglePaneControl()"/>
+		<mx:LinkButton id="pairwiseLinker" enabled="false" styleName="PairwiseLinked" paddingTop="0" click="setPairwiseAdvance(this.pairwiseLinker.styleName == 'PairwiseLinked')"/>
+		<mx:VBox height="32" verticalAlign="top" paddingBottom="4" paddingLeft="0" paddingRight="0">
+			<mx:VRule height="100%" alpha=".25" styleName="AppBarVerticalRule"/>
+		</mx:VBox>
+		<mx:LinkButton id="singleVsplit" enabled="true" styleName="ScreenSingleVSplit" click="handleScreenSplit(ControlBarClickEvent.DOUBLE_PANE_H)"/>
+		<mx:LinkButton id="singleHsplit" enabled="true" styleName="ScreenSingleHSplit" click="handleScreenSplit(ControlBarClickEvent.DOUBLE_PANE_V)"/>
+		<mx:LinkButton id="singlescreen" enabled="true" styleName="ScreenSingle" click="handleScreenSplit(ControlBarClickEvent.SINGLE_PANE)"/>
+		<mx:LinkButton id="blankscreen" enabled="true" styleName="ScreenBlank" click="this.myDispatcher.dispatchEvent(new ControlBarClickEvent(ControlBarClickEvent.BLANK_VIEW))"/>
+		<mx:LinkButton id="dualmonitors" enabled="false" visible="false" includeInLayout="false" styleName="DualMonitors" click="this.myDispatcher.dispatchEvent(new ControlBarClickEvent(ControlBarClickEvent.TOGGLE_DUAL_SCREENS))"/>			
+		<mx:VBox height="32" verticalAlign="top" paddingBottom="4" paddingLeft="0" paddingRight="0">
+			<mx:VRule height="100%" alpha=".25" styleName="AppBarVerticalRule"/>
+		</mx:VBox>
+		<!--<mx:LinkButton id="thumbview" enabled="true" styleName="ThumbView"/>-->
+		<mx:LinkButton id="menubutton" enabled="false" visible="false" includeInLayout="false" styleName="MenuButton" click="handleMenu()"/>
+		<mx:LinkButton id="pinbutton" enabled="true" styleName="PinnedButton" click="setPinning(!isBarPinned)"/>
+	</mx:HBox>
+</mx:ControlBar>

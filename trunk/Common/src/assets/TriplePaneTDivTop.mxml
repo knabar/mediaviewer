@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:views="org.mdid.mediaviewer.views.*"
+	width="100%" height="100%" 
+	horizontalScrollPolicy="off" verticalScrollPolicy="off">
+
+	<mx:VDividedBox  width="100%" height="100%" styleName="PaneDivider">
+		<mx:Box id="toppane"  width="100%" height="100%" minHeight="120" minWidth="120">
+			<mx:HDividedBox width="100%" height="100%" styleName="PaneDivider">
+				<mx:Box id="topleftpane"  width="100%" height="100%" minHeight="120" minWidth="120">
+					<views:ImageHolder id="topleftimage" imageURL="assets/images/sample.jpg" smoothBitmap="true"/>
+				</mx:Box>	
+				<mx:Box id="toprightpane"  width="100%" height="100%" minHeight="120" minWidth="120">
+					<views:ImageHolder id="toprightimage" imageURL="assets/images/texttest.jpg" smoothBitmap="true"/>
+				</mx:Box>
+			</mx:HDividedBox>
+		</mx:Box>
+		<mx:Box id="bottompane"  width="100%" height="100%" minHeight="120" minWidth="120">
+			<views:ImageHolder id="bottomimage" imageURL="assets/images/BLCW_I147.jpg" smoothBitmap="false"/>
+		</mx:Box>
+	</mx:VDividedBox>
+	
+</mx:Canvas>

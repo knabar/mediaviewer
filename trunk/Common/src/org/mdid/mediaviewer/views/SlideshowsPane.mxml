@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" 
+	xmlns:mate="http://mate.asfusion.com/"
+	layout="vertical" 	
+	title="My Slideshows" 
+	styleName="Login"
+	showCloseButton="true"
+	creationComplete="init()"
+	>
+	
+	<mx:Script>
+		<![CDATA[
+		import mx.collections.XMLListCollection;
+		import org.mdid.mediaviewer.vo.Slideshows;
+		import org.mdid.mediaviewer.events.SlideshowEvent;
+		import mx.collections.ICollectionView;
+		import mx.events.ListEvent;
+		import mx.events.CloseEvent;
+
+		[Bindable]
+		[Embed(source="assets/skin.swf", symbol="SlideshowIcon")] 
+		public var iconSymbolUnarchived:Class; 
+		
+		[Bindable]
+		[Embed(source="assets/skin.swf", symbol="SlideshowArchivedIcon")] 
+		public var iconSymbolArchived:Class; 
+		
+    	[Embed(source="/assets/skin.swf", symbol="BusyBlocks")]
+    	[Bindable]
+    	private var busyAnimation:Class;
+    	
+		[Bindable] private var errorMessage:String = "";
+		[Bindable] private var statusMessage:String = "";
+		[Bindable] public var slideshowsUnarchived:XMLListCollection;
+		[Bindable] public var slideshowsAll:XMLListCollection;
+		[Bindable] public var isLoggedIn:Boolean = false;
+		[Bindable] public var secureLoginRequired:Boolean;
+		[Bindable] public var sessionToken:String;
+		[Bindable] public var currentSlideshowID:String = "";
+		[Bindable] private var slideshowID:String = "";
+		
+		private function init():void {
+			if (!isLoggedIn) {
+				currentState = "statusMessage";
+				statusMessage = "ALERT: You must log into MDID before selecting a slideshow. Close this window then select the \"Login/Logout\" option.";
+				focusManager.setFocus(okayBtn);
+			} else {
+				focusManager.setFocus(myTree);
+			}
+		}
+		private function clickBranch(e:ListEvent):void {
+			var item:Object = Tree(e.currentTarget).selectedItem;
+			if (myTree.dataDescriptor.isBranch(item)) {
+				if (myTree.isItemOpen(item)) {
+					myTree.expandItem(item, false);
+				} else {
+					myTree.expandItem(item, !myTree.isItemOpen(item), true);
+				}
+			}
+		}
+		private function labelFolders(item:XML):String {
+			var children:ICollectionView;
+			var suffix:String = "";
+			if (myTree.dataDescriptor.isBranch(item)) {
+				children = myTree.dataDescriptor.getChildren(item);
+				suffix = " (" + children.length + ")";
+			}
+			return item[myTree.labelField] + suffix;
+		}
+		private function iconFunction(item:Object):Class {
+			if (myTree.dataDescriptor.isBranch(item)) {
+				if (myTree.isItemOpen(item)){
+					return myTree.getStyle("folderOpenIcon");
+				} else {
+					return myTree.getStyle("folderClosedIcon");
+				}
+			}
+			if (item.@archived == "true") {
+				return iconSymbolArchived;
+			} else {
+				return iconSymbolUnarchived;
+			}
+		}
+		private function toggleArchived():void {
+			myTree.dataProvider = this.cxboxArchived.selected ? slideshowsAll : slideshowsUnarchived;
+			myTree.dataProvider.refresh();
+		}
+		private function expandAllNodes(e:Event):void {
+			myTree.openItems = myTree.dataProvider;
+		}
+		private function closeAllNodes(e:Event):void {
+			myTree.openItems = [];
+		}
+		private function loadSlideshow():void {
+			if (myTree.selectedItem == null || myTree.dataDescriptor.isBranch(myTree.selectedItem)) {
+				currentState = "validationMessage";
+			} else {
+				var myXML:XML = myTree.selectedItem as XML;
+				slideshowID = myXML.@id;
+				if (currentSlideshowID == slideshowID) {
+					statusMessage = "Selected slideshow is currently loaded. Select a different one or return to current slideshow."
+					currentState = "successMessage";
+				} else {
+					//unload current slideshow if currentSlideshowID >= 0
+					statusMessage = "Loading selected slideshow. This may take several seconds."
+					currentState = "loadingSlideshow";
+					getSlideshowDispatcher.type = this.secureLoginRequired ? SlideshowEvent.GET_HTTPS : SlideshowEvent.GET_HTTP;
+					getSlideshowDispatcher.generateEvent();
+				}
+			}
+		}
+		private function handleError(result:Object):void {
+			errorMessage = "ERROR (" + result.faultString + ").";
+			currentState = "errorState";
+			trace("error object: " + result.faultString);
+		}
+		private function checkGetSlideshowResult(result:Object):void {
+			if (result.resultcode == "SUCCESS") {
+				statusMessage = "SUCCESS: Your slideshow information has been downloaded and images are being cached.";
+				currentState = "successMessage"
+				focusManager.setFocus(okayBtn2);
+			} else {
+				errorMessage = "ERROR: " + result.errormessage;
+				currentState = "errorState";
+			}
+		}
+		private function selectAnotherSlideshow():void {
+			currentState = "";
+		}
+		]]>
+	</mx:Script>
+	
+	<!-- Listeners and Dispatchers  -->
+	<mate:Dispatcher id="getSlideshowDispatcher" generator="{SlideshowEvent}">
+		<mate:ResponseHandler type="getSlideshowResultResponse" response="checkGetSlideshowResult(event.getSlideshowResult)" />
+		<mate:ResponseHandler type="errorResponse" response="handleError(event.errorResult)" />
+		<mate:eventProperties>
+			<mate:EventProperties  slideshowID="{slideshowID}" sessiontoken="{sessionToken}" slideshowtitle="{myTree.itemToLabel(myTree.selectedItem)}"/>
+		</mate:eventProperties>
+	</mate:Dispatcher>
+	
+	<!-- Main GUI -->
+	<mx:VBox id="main" minWidth="350" height="100%" paddingTop="19" paddingBottom="15" paddingLeft="5" paddingRight="5" horizontalAlign="left" verticalGap="3" verticalAlign="top">
+		<mx:Form id="mainform"  width="100%" height="100%" defaultButton="{loadSlideshowBtn}" paddingBottom="0" paddingLeft="0" paddingRight="0" paddingTop="0" horizontalGap="0" verticalGap="0">
+			<mx:Tree id="myTree" width="350" height="373" iconFunction="iconFunction" labelFunction="labelFolders" itemClick="clickBranch(event)" allowMultipleSelection="false" dataProvider="{slideshowsUnarchived}" showRoot="false" labelField="@label" styleName="SlideshowList"/>
+			<mx:HBox verticalAlign="middle" horizontalGap="1" paddingLeft="4" paddingRight="0" paddingTop="2">
+				<mx:LinkButton id="expandAll" paddingLeft="0" paddingRight="0" paddingTop="0" paddingBottom="0" height="18" label="Expand All" click="expandAllNodes(event)" cornerRadius="2"/>
+				<mx:VRule height="14"/>
+				<mx:LinkButton id="closeAll" paddingLeft="0" paddingRight="0" paddingTop="0" paddingBottom="0" height="18" label="Close All" click="closeAllNodes(event)" cornerRadius="2"/>
+			</mx:HBox>
+			<mx:CheckBox paddingLeft="6" id="cxboxArchived" label="Include archived (*) slideshows." change="toggleArchived()" styleName="Dialog"/>
+			<mx:HBox verticalAlign="middle" horizontalAlign="center" width="100%" paddingTop="10">
+				<mx:Button id="loadSlideshowBtn" label="Load Slideshow" click="loadSlideshow()"/>
+				<mx:LinkButton id="closeBtn" label="Close this window" click="dispatchEvent(new CloseEvent(CloseEvent.CLOSE))"/>
+			</mx:HBox>
+		</mx:Form>
+	</mx:VBox>
+	
+	<mx:states>
+		<mx:State name="statusMessage">
+			<mx:RemoveChild target="{mainform}"/>
+			<mx:AddChild relativeTo="{main}" position="lastChild">
+				<mx:Form width="100%" height="100%" defaultButton="{okayBtn}" paddingBottom="0" paddingLeft="0" paddingRight="0" paddingTop="0" horizontalGap="0" verticalGap="0">
+					<mx:VBox horizontalAlign="center" verticalGap="0" width="100%">
+						<mx:HBox horizontalAlign="center" width="350" paddingBottom="10">
+							<mx:Text maxWidth="300" width="100%" styleName="MessageOnBlack" text="{statusMessage}" paddingTop="4" textAlign="center"/>
+						</mx:HBox>
+						<mx:Button id="okayBtn" label="OK" width="50" click="dispatchEvent(new CloseEvent(CloseEvent.CLOSE))"/>
+					</mx:VBox>
+				</mx:Form>
+			</mx:AddChild>
+		</mx:State>
+		<mx:State name="successMessage">
+			<mx:RemoveChild target="{mainform}"/>
+			<mx:AddChild relativeTo="{main}" position="lastChild">
+				<mx:Form width="100%" height="100%" defaultButton="{okayBtn2}" paddingBottom="0" paddingLeft="0" paddingRight="0" paddingTop="0" horizontalGap="0" verticalGap="0">
+					<mx:VBox horizontalAlign="center" verticalGap="0" width="100%">
+						<mx:HBox horizontalAlign="center" width="350" paddingBottom="10">
+							<mx:Text maxWidth="300" width="100%" styleName="MessageOnBlack" text="{statusMessage}" paddingTop="4" textAlign="center"/>
+						</mx:HBox>
+						<mx:HBox verticalAlign="middle" horizontalAlign="center" width="100%" paddingTop="10">
+							<mx:Button id="okayBtn2" label="OK" width="50" click="dispatchEvent(new CloseEvent(CloseEvent.CLOSE))"/>
+							<mx:LinkButton id="selectNewBtn" visible="true" label="Select a different slideshow" click="selectAnotherSlideshow()"/>
+						</mx:HBox>
+					</mx:VBox>
+				</mx:Form>
+			</mx:AddChild>
+		</mx:State>
+		<mx:State name="validationMessage">
+			<mx:AddChild relativeTo="{main}" position="lastChild">
+				<mx:VBox horizontalAlign="center" width="100%">
+					<mx:Text maxWidth="275" width="100%" styleName="MessageOnBlack" text="ALERT: Please select a slideshow, then click the &quot;Load Slideshow&quot; option." paddingTop="4" textAlign="center"/>
+				</mx:VBox>
+			</mx:AddChild>
+		</mx:State>
+		<mx:State name="errorState">
+			<mx:AddChild relativeTo="{main}" position="lastChild">
+				<mx:VBox horizontalAlign="center" width="100%">
+					<mx:Text maxWidth="275" width="100%" styleName="MessageOnBlack" text="{errorMessage}" paddingTop="4" textAlign="center"/>
+				</mx:VBox>
+			</mx:AddChild>
+		</mx:State>
+		<mx:State name="loadingSlideshow">
+			<mx:AddChild relativeTo="{main}" position="lastChild">
+				<mx:VBox horizontalAlign="center" width="100%">
+					<mx:Text id="loadMessageHolder" maxWidth="275" width="100%" styleName="MessageOnBlack" text="{statusMessage}" paddingTop="4" textAlign="center"/>
+					<mx:Image source="{busyAnimation}" />
+				</mx:VBox>
+			</mx:AddChild>
+			<mx:SetProperty target="{loadSlideshowBtn}" name="enabled" value="false"/>
+			<mx:SetProperty target="{myTree}" name="height" value="304"/>
+		</mx:State>
+	</mx:states>
+	
+</mx:TitleWindow>

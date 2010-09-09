@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:mate="http://mate.asfusion.com/"
+	width="100%" height="100%"
+	creationComplete="init();">
+	<mx:Script>
+		<![CDATA[
+		import mx.effects.Move;
+		import org.mdid.mediaviewer.events.EdgeControlsEvent;
+		import org.mdid.mediaviewer.events.AppStatusEvent;
+		import org.mdid.mediaviewer.events.ControlBarClickEvent;
+		import org.mdid.mediaviewer.events.DisplayControlsEvent;
+		import mx.events.ResizeEvent;	
+		
+     	[Embed(source="/assets/skin.swf", symbol="Edge_Next")]
+    	[Bindable] public var nextUpOver:Class;
+     	[Embed(source="/assets/skin.swf", symbol="Edge_Next_down")]
+    	[Bindable] public var nextDown:Class;
+     	[Embed(source="/assets/skin.swf", symbol="Edge_Next_vestige")]
+    	[Bindable] public var nextVestige:Class;
+
+     	[Embed(source="/assets/skin.swf", symbol="Edge_Previous")]
+    	[Bindable] public var previousUpOver:Class;
+     	[Embed(source="/assets/skin.swf", symbol="Edge_Previous_down")]
+    	[Bindable] public var previousDown:Class;
+     	[Embed(source="/assets/skin.swf", symbol="Edge_Previous_vestige")]
+    	[Bindable] public var previousVestige:Class;
+		
+     	[Embed(source="/assets/skin.swf", symbol="Edge_ZoomIn")]
+    	[Bindable] public var zoomInUpOver:Class;
+     	[Embed(source="/assets/skin.swf", symbol="Edge_ZoomIn_down")]
+    	[Bindable] public var zoomInDown:Class;
+     	[Embed(source="/assets/skin.swf", symbol="Edge_ZoomIn_vestige")]
+    	[Bindable] public var zoomInVestige:Class;
+		
+     	[Embed(source="/assets/skin.swf", symbol="Edge_ZoomOut")]
+    	[Bindable] public var zoomOutUpOver:Class;
+     	[Embed(source="/assets/skin.swf", symbol="Edge_ZoomOut_down")]
+    	[Bindable] public var zoomOutDown:Class;
+     	[Embed(source="/assets/skin.swf", symbol="Edge_ZoomOut_vestige")]
+    	[Bindable] public var zoomOutVestige:Class;
+    	
+    	public var panePosition:int = -1;
+    	public var paneLocation:String; //top, left, bottom, right or single
+    	[Bindable] public var zoomInEnabled:Boolean = false;
+    	[Bindable] public var zoomOutEnabled:Boolean = false;
+		[Bindable] public var isTopBarPinned:Boolean = true;
+		[Bindable] public var isAppBarPinned:Boolean = true;
+		
+		private function init():void {
+			if (!this.isTopBarPinned && paneLocation != "bottom") {
+				this.rollTopDown.yTo = 36;
+				this.rollTopDown.startDelay = 200;
+				this.zoomIn.y = 36;
+				this.goPrevious.setStyle("verticalCenter", -65);
+				this.myLeft.setStyle("top", 160);
+				this.myTop.height = 66;
+			}
+			this.zoomIn.setStyle("showEffect", rollTopDown);
+			this.zoomIn.setStyle("hideEffect", rollTopUp);
+			this.goPrevious.setStyle("showEffect", rollLeftIn);
+			this.goPrevious.setStyle("hideEffect", rollLeftOut);
+			this.goNext.setStyle("showEffect", rollRightIn);
+			this.goNext.setStyle("hideEffect", rollRightOut);
+			this.zoomOut.setStyle("showEffect", rollBottomUp);
+			this.zoomOut.setStyle("hideEffect", rollBottomDown);
+			toggleEdgeControlsVisibility(true);
+		}		
+		private function endAllEffectsStarted():void {
+			this.zoomIn.endEffectsStarted();
+			this.goPrevious.endEffectsStarted();
+			this.goNext.endEffectsStarted();
+			this.zoomOut.endEffectsStarted();
+		}
+		private function toggleEdgeControlsVisibility(isVisible:Boolean):void {
+			endAllEffectsStarted();
+			this.zoomIn.visible = isVisible;
+			this.goPrevious.visible = isVisible;
+			this.goNext.visible = isVisible;
+			this.zoomOut.visible = isVisible;
+		}
+		private function handleProxyClick(e:MouseEvent):void {
+			if (!this.zoomOut.visible) return;
+			var myEdgeEvent:EdgeControlsEvent;
+			switch (e.currentTarget) {
+				case this.myLeft :
+					if (!this.myLeft.enabled || e.type == MouseEvent.MOUSE_OUT) {
+						this.goPrevious.source = this.previousVestige;
+						return;
+					}
+					if (e.type == MouseEvent.CLICK) {
+						myEdgeEvent = new EdgeControlsEvent(EdgeControlsEvent.PREVIOUS_SLIDE);
+						myEdgeEvent.panePosition = this.panePosition;
+						myEdgeEvent.shiftKeyDown = e.shiftKey;
+						this.myDispatcher.dispatchEvent(myEdgeEvent);
+					} else {
+						this.goPrevious.source = e.type == MouseEvent.MOUSE_DOWN ? this.previousDown : this.previousUpOver;
+					}
+					break;
+				case this.myRight :
+					if (!this.myRight.enabled || e.type == MouseEvent.MOUSE_OUT) {
+						this.goNext.source = this.nextVestige;
+						return;
+					}
+					if (e.type == MouseEvent.CLICK) {
+						myEdgeEvent = new EdgeControlsEvent(EdgeControlsEvent.NEXT_SLIDE);
+						myEdgeEvent.panePosition = this.panePosition;
+						myEdgeEvent.shiftKeyDown = e.shiftKey;
+						this.myDispatcher.dispatchEvent(myEdgeEvent);
+					} else {
+						this.goNext.source = e.type == MouseEvent.MOUSE_DOWN ? this.nextDown : this.nextUpOver;
+					}
+					break;
+				case this.myTop :
+					if (!this.myTop.enabled || e.type == MouseEvent.MOUSE_OUT) {
+						this.zoomIn.source = this.zoomInVestige;
+						return;
+					}
+					if (e.type == MouseEvent.CLICK) {
+						myEdgeEvent = new EdgeControlsEvent(EdgeControlsEvent.ZOOMIN);
+						myEdgeEvent.panePosition = this.panePosition;
+						myEdgeEvent.shiftKeyDown = e.shiftKey;
+						this.myDispatcher.dispatchEvent(myEdgeEvent);
+					} else {
+						this.zoomIn.source = e.type == MouseEvent.MOUSE_DOWN ? this.zoomInDown : this.zoomInUpOver;
+					}
+					break;
+				case this.myBottom :
+					if (!this.myBottom.enabled || e.type == MouseEvent.MOUSE_OUT) {
+						this.zoomOut.source = this.zoomOutVestige;
+						return;
+					}
+					if (e.type == MouseEvent.CLICK) {
+						myEdgeEvent = new EdgeControlsEvent(EdgeControlsEvent.ZOOMOUT);
+						myEdgeEvent.panePosition = this.panePosition;
+						myEdgeEvent.shiftKeyDown = e.shiftKey;
+						this.myDispatcher.dispatchEvent(myEdgeEvent);
+					} else {
+						this.zoomOut.source = e.type == MouseEvent.MOUSE_DOWN ? this.zoomOutDown : this.zoomOutUpOver;
+					}
+					break;
+			}
+		}
+		private function handleRollover(e:Event):void {
+			if (!this.zoomIn.visible) return;
+			this.zoomIn.source = this.myTop == e.currentTarget && this.myTop.enabled ? this.zoomInUpOver : this.zoomInVestige;
+			this.goPrevious.source = this.myLeft == e.currentTarget && this.myLeft.enabled ? this.previousUpOver : this.previousVestige;
+			this.goNext.source = this.myRight == e.currentTarget && this.myRight.enabled ? this.nextUpOver : this.nextVestige;
+			this.zoomOut.source = this.myBottom == e.currentTarget && this.myBottom.enabled ? this.zoomOutUpOver : this.zoomOutVestige;
+		}
+		private function updateButtonStatus(status:Object):void {
+			var previousIsEnabled:Boolean = (panePosition == 1) ? status.previousIsEnabled1 : status.previousIsEnabled2;
+			var nextIsEnabled:Boolean = (panePosition == 1) ? status.nextIsEnabled1 : status.nextIsEnabled2;
+			this.goPrevious.source = previousIsEnabled && this.myLeft.hitTestPoint(this.parentApplication.stage.mouseX, this.parentApplication.stage.mouseY) ? this.previousUpOver : this.previousVestige;
+			this.myLeft.enabled = previousIsEnabled;
+			this.goNext.source = nextIsEnabled && this.myRight.hitTestPoint(this.parentApplication.stage.mouseX, this.parentApplication.stage.mouseY) ? this.nextUpOver : this.nextVestige;
+			this.myRight.enabled = nextIsEnabled;
+		}
+		private function toggleControls(eType:String):void {
+			toggleEdgeControlsVisibility(eType == DisplayControlsEvent.SHOW_CONTROLS);
+		}
+		private function adjustSize(eType:String):void {
+			switch (eType) {
+				case ControlBarClickEvent.PIN_TOPBAR :
+					if (this.paneLocation == "bottom") return;
+					this.rollTopDown.yTo = 1;
+					this.rollTopDown.startDelay = 0;
+					this.zoomIn.y = 1;
+					this.goPrevious.setStyle("verticalCenter", -45);
+					this.myLeft.setStyle("top", 120);
+					this.myTop.height = 31;
+				break;
+				case ControlBarClickEvent.UNPIN_TOPBAR :
+					if (this.paneLocation == "bottom") return;
+					this.rollTopDown.yTo = 36;
+					this.rollTopDown.startDelay = 200;
+					this.zoomIn.y = 36;
+					this.goPrevious.setStyle("verticalCenter", -65);
+					this.myLeft.setStyle("top", 160);
+					this.myTop.height = 66;
+				break;
+				case ControlBarClickEvent.PIN_APPBAR :
+					if (this.paneLocation == "top") return;
+					this.rollBottomDown.yFrom = 0;
+					this.rollBottomDown.yTo = 30;
+					this.rollBottomUp.yFrom = 30;
+					this.rollBottomUp.yTo = 0;
+					this.rollBottomUp.startDelay = 0;
+					this.zoomOut.y = 0;
+					this.myBottom.height = 30;
+				break;
+				case ControlBarClickEvent.UNPIN_APPBAR :
+					if (this.paneLocation == "top") return;
+					this.rollBottomDown.yFrom = 0;
+					this.rollBottomDown.yTo = 75;
+					this.rollBottomUp.yFrom = 75;
+					this.rollBottomUp.yTo = 0;
+					this.rollBottomUp.startDelay = 200;
+					this.zoomOut.y = 0;
+					this.myBottom.height = 75;
+				break
+			}
+		}
+		public function handleLeftCanvasResize(e:ResizeEvent=null):void {
+			if (this.myLeft.height < 155 || (this.paneLocation != "bottom" && !this.isTopBarPinned && this.myLeft.height < 190)) {
+				this.myLeft.setStyle("bottom", 0);
+				this.goPrevious.setStyle("verticalCenter", null);
+				this.goPrevious.y =  isTopBarPinned ? 5 : 0;
+			} else {
+				this.myLeft.setStyle("bottom", 30);
+				this.goPrevious.setStyle("verticalCenter", isTopBarPinned ? -45 : -65);
+				
+			}
+		}
+		private function handleRollTopDownEffectEnd(e:Event=null):void {
+			this.myTop.height = (this.isTopBarPinned || paneLocation == "bottom") ? 31 : 66;
+		}
+		private function handleRollBottomUpEffectEnd(e:Event=null):void {
+			this.myBottom.height = (this.isAppBarPinned || paneLocation == 'top') ? 30 : 75;
+		}
+		]]>
+	</mx:Script>
+
+	<!-- Listeners and Dispatchers  -->
+	<mate:Listener type="{AppStatusEvent.SYNC_BUTTON_STATES}" receive="updateButtonStatus(event.synButtonObj)" />
+	<mate:Listener type="{DisplayControlsEvent.HIDE_CONTROLS}" receive="toggleControls(event.type)" />
+	<mate:Listener type="{DisplayControlsEvent.SHOW_CONTROLS}" receive="toggleControls(event.type)" />
+	<mate:Listener type="{ControlBarClickEvent.PIN_TOPBAR}" receive="adjustSize(event.type)" />
+	<mate:Listener type="{ControlBarClickEvent.UNPIN_TOPBAR}" receive="adjustSize(event.type)" />
+	<mate:Listener type="{ControlBarClickEvent.PIN_APPBAR}"	receive="adjustSize(event.type)" />
+	<mate:Listener type="{ControlBarClickEvent.UNPIN_APPBAR}"	receive="adjustSize(event.type)" />
+	<mate:Dispatcher id="myDispatcher"/>
+	
+	<mx:Move id="rollTopDown" duration="200" yFrom="-35" yTo="1" effectEnd="handleRollTopDownEffectEnd(event);"/>
+	<mx:Move id="rollTopUp" duration="200" yFrom="1" yTo="-30"/>
+	<mx:Move id="rollLeftIn" duration="200" xFrom="-30" xTo="0"/>
+	<mx:Move id="rollLeftOut" duration="200" xFrom="0" xTo="-30"/>
+	<mx:Move id="rollRightIn" duration="200" xFrom="30" xTo="0"/>
+	<mx:Move id="rollRightOut" duration="200" xFrom="0" xTo="30"/>
+	<mx:Move id="rollBottomDown" duration="200" yFrom="0" yTo="30"/>
+	<mx:Move id="rollBottomUp" duration="200" yFrom="30" yTo="0" effectStart="handleRollBottomUpEffectEnd(event)"/>
+	
+	<mx:Canvas id="ZoomPanControlBoxShadow" width="60" height="120" left="0" top="0" horizontalScrollPolicy="off" verticalScrollPolicy="off"/>
+	<mx:Canvas id="myTop" enabled="{this.zoomInEnabled}" disabledOverlayAlpha="0" mouseChildren="false" mouseOver="handleRollover(event)" mouseDown="handleProxyClick(event)" mouseUp="handleProxyClick(event)" mouseOut="handleProxyClick(event)" click="handleProxyClick(event)" height="66" left="60" top="0" right="30" horizontalScrollPolicy="off" verticalScrollPolicy="off">
+		<mx:Image id="zoomIn" source="{this.zoomInVestige}" horizontalCenter="-15" width="64" height="30" visible="false" y="1"/>
+	</mx:Canvas>
+	<mx:Canvas id="myLeft" resize="handleLeftCanvasResize(event)" disabledOverlayAlpha="0" mouseChildren="false" mouseOver="handleRollover(event)" mouseDown="handleProxyClick(event)" mouseUp="handleProxyClick(event)" mouseOut="handleProxyClick(event)" click="handleProxyClick(event)" width="30" left="0" top="120" bottom="30" horizontalScrollPolicy="off" verticalScrollPolicy="off">
+		<mx:Image id="goPrevious" source="{this.previousVestige}" verticalCenter="-45" width="30" height="64" x="0" visible="false"/>
+	</mx:Canvas>
+	<mx:Canvas id="myRight" disabledOverlayAlpha="0" mouseChildren="false" mouseOver="handleRollover(event)" mouseDown="handleProxyClick(event)" mouseUp="handleProxyClick(event)" mouseOut="handleProxyClick(event)" click="handleProxyClick(event)" width="30" right="0" top="30" bottom="30" horizontalScrollPolicy="off" verticalScrollPolicy="off">
+		<mx:Image id="goNext" source="{this.nextVestige}" verticalCenter="0" width="30" height="64" x="0" visible="false"/>
+	</mx:Canvas>
+	<mx:Canvas id="myBottom" enabled="{this.zoomOutEnabled}"  disabledOverlayAlpha="0" mouseChildren="false" mouseOver="handleRollover(event)" mouseDown="handleProxyClick(event)" mouseUp="handleProxyClick(event)" mouseOut="handleProxyClick(event)" click="handleProxyClick(event)" height="30" bottom="0" left="30" right="30" horizontalScrollPolicy="off" verticalScrollPolicy="off">
+		<mx:Image id="zoomOut" source="{this.zoomOutVestige}" horizontalCenter="0" width="64" height="30" y="0" visible="false"/>
+	</mx:Canvas>
+	
+</mx:Canvas>

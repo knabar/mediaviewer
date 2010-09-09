@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas
+	xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:ns1="com.adobe.wheelerstreet.fig.panzoom.*" 
+	xmlns:mate="http://mate.asfusion.com/"
+	horizontalScrollPolicy="off"
+	verticalScrollPolicy="off" 
+	width="100%" height="100%" clipContent="true"
+	creationComplete="init()">
+
+	<mx:Script>
+		<![CDATA[
+		import mx.binding.utils.ChangeWatcher;
+		import com.adobe.wheelerstreet.fig.panzoom.events.LoadCompleteEvent;
+		import mx.binding.utils.BindingUtils;
+		import mx.effects.Resize;
+		import flash.events.TimerEvent;
+		import flash.utils.Timer;
+		import org.mdid.mediaviewer.events.AppStatusEvent;
+		import org.mdid.mediaviewer.events.ControlBarClickEvent;
+		import org.mdid.mediaviewer.events.DisplayControlsEvent;
+		import org.mdid.mediaviewer.events.SlideshowEvent;
+		import org.mdid.mediaviewer.events.EdgeControlsEvent;
+		
+		private var thumbIsDown:Boolean = false;
+		private var shrinkControlBoxTimer:Timer = new Timer(500, 0);
+		private var isExtensionPinned:Boolean;
+		
+		[Embed(source="/assets/skin.swf", symbol="MissingImage")]
+    	[Bindable] private var MissingImage:Class;
+    				        		
+		[Bindable] public var imageURL:String;		
+		[Bindable] public var smoothBitmap:Boolean = true;
+		
+		public var panePosition:int;
+		public var paneLocation:String; //top, left, bottom, right or single
+		[Bindable] public var isTopBarPinned:Boolean = true;
+		
+		private function init():void {
+			addEventListener(LoadCompleteEvent.LOAD_COMPLETE, centerImage);
+			this.setPinning(false);
+			this.ImageControlBox.setStyle("showEffect", zoomOn);
+			this.ImageControlBox.setStyle("hideEffect", zoomOff);
+			this.extendedControls.setStyle("showEffect", fadein);
+			this.extendedControls.setStyle("hideEffect", fadeout);
+			this.zoomIn.enabled = false;
+			this.ImageSlider.enabled = false;
+			this.zoomOut.enabled = false;
+			this.actualSize.enabled = false;
+			this.bestFit.enabled = false;
+			BindingUtils.bindSetter(setterIsZoomEnabled, this.ImageSlider, "value", false);
+			if (this.paneLocation != "bottom") {
+				adjustImageControlBoxY();
+				ChangeWatcher.watch(this, "isTopBarPinned", adjustImageControlBoxY);
+			}
+		}
+		public function adjustImageControlBoxY(e:Event = null):void {
+			if (this.isTopBarPinned) {
+				this.ImageControlBox.y = 5;
+			} else {
+				this.ImageControlBox.y = this.paneLocation == "bottom" ? 5 : 40;
+			}
+		}
+		private function setPinning(theTruth:Boolean) : void {
+			isExtensionPinned = theTruth;
+			this.extensionPin.styleName = isExtensionPinned ? "SmallPinnedButton" : "SmallPinButton";
+		}
+        private function handleRollover(e:Event):void {
+        	if (!shrinkControlBoxTimer.hasEventListener(TimerEvent.TIMER)) {
+        		shrinkControlBoxTimer.addEventListener(TimerEvent.TIMER, shrinkControlsBox);
+        		shrinkControlBoxTimer.reset();
+        		shrinkControlBoxTimer.start();
+        		this.ImageControlBox.endEffectsStarted();
+        		if (!this.extendedControls.visible) {
+        			this.openControlExtension.play();
+        			this.extendedControls.visible = true;
+        		}
+        	}  	
+        }
+
+        private function shrinkControlsBox(e:TimerEvent):void {
+        	if (thumbIsDown || this.ImageControlBox.hitTestPoint(this.parentApplication.mouseX, this.parentApplication.mouseY, true)) {
+        		shrinkControlBoxTimer.reset();
+        		shrinkControlBoxTimer.start();
+        	} else if (shrinkControlBoxTimer.currentCount > 5) {
+        		shrinkControlBoxTimer.removeEventListener(TimerEvent.TIMER, shrinkControlsBox);
+        		this.ImageControlBox.endEffectsStarted();
+        		if (!this.isExtensionPinned) {
+	        		this.closeControlExtension.play();
+	        		this.extendedControls.visible = false;
+        		}
+        	}
+        }
+		private function centerImage(e:Event=null):void {
+			imageViewer.centerView();
+			if (!this.ImageSlider.enabled) {
+				this.zoomIn.enabled = true;
+				this.ImageSlider.enabled = true;
+				this.zoomOut.enabled = true;
+				this.actualSize.enabled = true;
+				this.bestFit.enabled = true;
+				
+			}
+		}
+		public function removeImage():void {
+			imageViewer.imageURL = "";
+			imageViewer.validateNow();
+		}
+		private function centerImageByPane(thePane:int):void {
+			if (thePane == this.panePosition) centerImage();
+		}
+		private function setZoomToOne(e:Event=null):void {
+			this.imageViewer.centerView();
+			this.imageViewer.setZoom(1);
+		}
+		private function setZoomToOneByPane(thePane:int):void {
+			if (thePane == this.panePosition) setZoomToOne();
+		}
+		private function handleZoomEvent(e:EdgeControlsEvent):void {
+			if (e.panePosition != this.panePosition) return;
+			if (e.type == EdgeControlsEvent.ZOOMIN && this.zoomIn.enabled) {
+				imageViewer.zoom('in', e.shiftKeyDown);
+			} else if (e.type == EdgeControlsEvent.ZOOMOUT && this.zoomOut.enabled) {
+				imageViewer.zoom('out', e.shiftKeyDown);
+			}
+		}
+		private function setterIsZoomEnabled(theValue:Number):void {
+			if (isNaN(theValue)) return;
+			this.percentLabel.text = Math.round(theValue * 100).toString() + "%";
+			this.zoomIn.enabled = theValue < this.ImageSlider.maximum;
+			this.zoomOut.enabled = theValue > this.ImageSlider.minimum;
+		}
+		private function toggleControls(eType:String):void {
+	   		this.ImageControlBox.endEffectsStarted();
+    		this.endEffectsStarted();
+			if (this.isExtensionPinned) {
+        		if (!this.isTopBarPinned && eType == DisplayControlsEvent.SHOW_CONTROLS && this.paneLocation != "bottom") {
+        			this.rollDown.play();
+        		} else if (!this.isTopBarPinned && eType == DisplayControlsEvent.HIDE_CONTROLS && this.paneLocation != "bottom") {
+        			this.rollUp.play();
+        		}
+        		return;
+			}
+    		this.extendedControls.endEffectsStarted();
+    		this.ImageControlBox.visible = (eType == DisplayControlsEvent.SHOW_CONTROLS);
+		}
+		private function dispatchShowCatalogDataEvent():void {
+			var myEvent:SlideshowEvent;
+			if (this.panePosition == 1 ) {
+				myEvent = new SlideshowEvent(SlideshowEvent.SHOW_CATALOG_DATA_1);
+			} else if (this.panePosition == 2 ) {
+				myEvent = new SlideshowEvent(SlideshowEvent.SHOW_CATALOG_DATA_2);
+			}
+			myEvent.isDispatchedFromTopBar = false;
+			this.myDispatcher.dispatchEvent(myEvent);
+		}
+		]]>
+	</mx:Script>
+	
+	<!-- Listeners and Dispatchers  -->
+	<mate:Listener type="{EdgeControlsEvent.ZOOMIN}" receive="handleZoomEvent(event)"/>
+	<mate:Listener type="{EdgeControlsEvent.ZOOMOUT}" receive="handleZoomEvent(event)"/>
+	<mate:Listener type="{EdgeControlsEvent.CENTER_IMAGE}" receive="centerImageByPane(event.panePosition)"/>
+	<mate:Listener type="{EdgeControlsEvent.SET_ZOOM_TO_ONE}" receive="setZoomToOneByPane(event.panePosition)"/>
+	<mate:Listener type="{DisplayControlsEvent.HIDE_CONTROLS}" receive="toggleControls(event.type)" />
+	<mate:Listener type="{DisplayControlsEvent.SHOW_CONTROLS}" receive="toggleControls(event.type)" />
+	<mate:Dispatcher id="myDispatcher"/>
+
+	<mx:Resize id="openControlExtension" widthFrom="20" widthTo="50" duration="200" target="{this.ImageControlBox}"/>
+	<mx:Resize id="closeControlExtension" widthFrom="50" widthTo="20"  duration="500" target="{this.ImageControlBox}"/>
+	<mx:Fade id="fadein" duration="300"/>
+	<mx:Fade id="fadeout" duration="150"/>
+	<mx:Fade id="zoomOn" duration="200" />
+	<mx:Fade id="zoomOff" duration="200" />
+	<mx:Move id="rollDown" duration="200" yFrom="5" yTo="40" target="{this.ImageControlBox}"/>
+	<mx:Move id="rollUp" duration="200" yFrom="40" yTo="5" target="{this.ImageControlBox}"/>
+
+
+	<mx:Image id="missingImageGraphic" visible="false" includeInLayout="false" width="188" height="139" verticalCenter="0" horizontalCenter="0" source="{MissingImage}"/>
+
+	<!--ImageViewer -->
+	<ns1:ImageViewer 
+		id="imageViewer"
+		imageURL="{imageURL}" 
+		bitmapScaleFactorMax="2"
+		bitmapScaleFactorMin=".1"
+		smoothBitmap="{smoothBitmap}"
+		width="100%" height="100%"
+	/>		
+	<!--Navigation controls -->
+	<mx:VBox id="ImageControlBox" 
+		x="9" y="5" width="20" 
+		verticalScrollPolicy="off" horizontalScrollPolicy="off"
+		verticalGap="0" horizontalAlign="left" 
+		styleName="PanZoom" 
+		paddingLeft="-1" paddingTop="2" paddingBottom="4"
+		rollOver="handleRollover(event)"
+		>
+		 <mx:HBox horizontalGap="4">
+		 	<mx:VBox width="20" left="0" verticalGap="0">
+				<mx:HBox paddingLeft="4">
+					<mx:LinkButton id="zoomIn" styleName="ZoomOutButton" click="{imageViewer.zoom('in', false);}"/>		
+				</mx:HBox>
+				<mx:HBox paddingBottom="-1" paddingTop="1" paddingLeft="-1">			
+					<mx:VSlider id="ImageSlider"
+						enabled="false"
+						minimum="{ imageViewer.bitmapScaleFactorMin }" 
+						maximum="{ imageViewer.bitmapScaleFactorMax }" 
+						value  ="{imageViewer.bitmapScaleFactor}"
+						change ="{ imageViewer.setZoom(VSlider(event.currentTarget).value) }" 				
+						snapInterval=".001"
+						liveDragging="true"
+						height="85"
+						showDataTip="false"
+						thumbPress="thumbIsDown = true" 
+						thumbRelease="thumbIsDown = false" />				
+				</mx:HBox>
+				<mx:HBox paddingLeft="4">
+					<mx:LinkButton id="zoomOut" styleName="ZoomInButton"  click="{imageViewer.zoom('out', false)}"/>
+				</mx:HBox>		
+		 	</mx:VBox>
+		 	<mx:VBox id="extendedControls" height="100%" verticalGap="5" paddingLeft="5" visible="false">
+		 		<mx:LinkButton id="extensionPin" styleName="SmallPinButton" click="this.setPinning(!this.isExtensionPinned);"/>
+		 		<mx:LinkButton styleName="Info" click="dispatchShowCatalogDataEvent()"/>
+		 		<mx:LinkButton id="actualSize" styleName="ActualSize" click="{setZoomToOne(event)}"/>
+		 		<mx:LinkButton id="bestFit" styleName="BestFit" click="{centerImage(event)}"/>
+		 		<mx:VBox height="100%" verticalAlign="bottom" verticalGap="0">
+		 			<mx:Label id="percentLabel" paddingLeft="-11" paddingBottom="-3" text="" color="#E3E3E3" styleName="ZoomPercentCaption"/>		 			
+		 		</mx:VBox>
+		 	</mx:VBox>
+		 </mx:HBox>
+	</mx:VBox>					
+
+</mx:Canvas>

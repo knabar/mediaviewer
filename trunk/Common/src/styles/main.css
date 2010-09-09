@@ -1,0 +1,224 @@
+Application {
+	fontFamily: "VerdanaEmbedded";
+	fontSize: 12;
+	backgroundImage: none;
+	backgroundColor: #000000;
+	modalTransparency: 0.7;
+	modalTransparencyColor: #000000;
+	modalTransparencyDuration: 250;
+	modalTransparencyBlur: 4;
+	paddingLeft: 0;
+	paddingRight: 0;
+	paddingBottom: 0;
+	paddingTop: 0;
+	borderThickness: 0;
+}
+HSlider.ScrubBarSliderBlue {
+	thumbUpSkin: Embed(source="../assets/skin.swf", symbol="SliderThumb_blue");
+	thumbOverSkin: Embed(source="../assets/skin.swf", symbol="SliderThumb_blue_over");
+	thumbDisabledSkin: Embed(source="../assets/skin.swf", symbol="SliderThumb_disabled");
+	thumbDownSkin: Embed(source="../assets/skin.swf", symbol="SliderThumb_blue");
+	trackSkin: Embed(source="../assets/skin.swf", symbol="SliderTrack_invisible");
+	thumbOffset: -10;
+	trackMargin: 0;
+	showTrackHighlight: false;
+}
+HSlider.ScrubBarSliderRed {
+	thumbUpSkin: Embed(source="../assets/skin.swf", symbol="SliderThumb_red");
+	thumbOverSkin: Embed(source="../assets/skin.swf", symbol="SliderThumb_red_over");
+	thumbDisabledSkin: Embed(source="../assets/skin.swf", symbol="SliderThumb_disabled");
+	thumbDownSkin: Embed(source="../assets/skin.swf", symbol="SliderThumb_red");
+	trackSkin: Embed(source="../assets/skin.swf", symbol="SliderTrack_invisible");
+	thumbOffset: -10;
+	trackMargin: 0;
+	showTrackHighlight: false;
+}
+Canvas.ScrubThumbPreviewHolder {
+	backgroundImage: Embed(source="../assets/skin.swf", symbol="ThumbPreviewHolder");
+	backgroundSize: "100%";
+}
+CheckBox.Dialog {
+	color: #FFFFFF;
+	fontFamily: "VerdanaEmbedded";
+	textRollOverColor: #D5E8FF;
+	textSelectedColor: #FFFFFF;
+	disabledColor: #B2B2B2;
+	horizontalGap: 3;
+}
+CheckBox.CatalogDataPane {
+	color: #000000;
+	fontFamily: "VerdanaEmbedded";
+	textRollOverColor: #121212;
+	textSelectedColor: #000000;
+	disabledColor: #222222;
+	horizontalGap: -2;
+	paddingTop: 2;
+	paddingRight: -2;
+	leading: -2;
+	disabledIcon: Embed(source="../assets/skin.swf", symbol="CheckBox_disabledIcon");
+	downIcon: Embed(source="../assets/skin.swf", symbol="CheckBox_downIcon");
+	overIcon: Embed(source="../assets/skin.swf", symbol="CheckBox_overIcon");
+	selectedDisabledIcon: Embed(source="../assets/skin.swf", symbol="CheckBox_selectedDisabledIcon");
+	selectedDownIcon: Embed(source="../assets/skin.swf", symbol="CheckBox_selectedDownIcon");
+	selectedOverIcon: Embed(source="../assets/skin.swf", symbol="CheckBox_selectedOverIcon");
+	selectedUpIcon: Embed(source="../assets/skin.swf", symbol="CheckBox_selectedUpIcon");
+	upIcon: Embed(source="../assets/skin.swf", symbol="CheckBox_upIcon");
+}
+ControlBar.AppBar {
+	horizontalAlign: center;
+	borderSkin: Embed(source="../assets/skin.swf", symbol="AppBarBorderSkin");
+}
+ControlBar.AppMenu {
+	horizontalAlign: center;
+	borderSkin: Embed(source="../assets/skin.swf", symbol="MenuBarBorderSkin");
+}
+ControlBar.TopBar {
+	horizontalAlign: center;
+	borderSkin: Embed(source="../assets/skin.swf", symbol="AppBarTopBorderSkin");
+}
+TitleWindow.Login {
+	borderSkin: Embed(source="../assets/skin.swf", symbol="DialogBox");
+	titleStyleName: titleWindowTitle;
+	paddingTop: 0;
+	paddingBottom: 0;
+	headerHeight: 23;
+}
+.CatalogDataWindow {
+	titleStyleName: titleWindowTitle;
+	backgroundAlpha: 1.0;
+	paddingTop: 0;
+	paddingBottom: 0;
+	headerHeight: 23;
+}
+TitleWindow.Dialog {
+	borderSkin: Embed(source="../assets/skin.swf", symbol="DialogBox");
+	titleStyleName: titleWindowTitle;
+	paddingTop: 0;
+	paddingBottom: 0;
+	headerHeight: 23;
+}
+TextInput {
+	backgroundAlpha: 1.0;
+	color: #000000;
+	borderStyle: solid;
+	backgroundColor: #FCFCFC;
+	borderThickness: 1;
+	paddingLeft: 1;
+	paddingRight: 1;
+	paddingBottom: 1;
+	paddingTop: 1;
+}
+Text {
+	fontFamily: "VerdanaEmbedded";
+	color: #0B333C;
+}
+Text.MessageOnBlack {
+	color: #F7F7F7;
+	textAlign: center;
+	fontFamily: "VerdanaEmbedded";
+}
+Tree.SlideshowList {
+	alternatingItemColors: #000000, #333333;
+	borderColor: #000000;
+	borderStyle: inset;
+	indentation: 15;
+	backgroundColor: #959595;
+	disclosureClosedIcon: ClassReference(null);
+    disclosureOpenIcon: ClassReference(null);
+}
+Button {
+	fontFamily: "VerdanaEmbedded";
+	fontWeight: normal;
+	paddingLeft: 8;
+	paddingRight: 8;
+	cornerRadius: 1;
+	paddingTop: 1;
+	paddingBottom: 1;
+}
+Button.Login {
+	horizontalGap: 0;
+	
+}
+.titleWindowTitle
+{
+	fontFamily: "VerdanaEmbedded";
+	textAlign: left;
+	fontSize: 12;
+	fontWeight: bold;
+	paddingLeft: 0;
+	paddingRight: 0;
+}
+Label.MainTitle {
+	color: #FFFFFF;
+	fontSize: 12;
+	textAlign: center;
+}
+Label.previewThumTitle {
+	fontFamily: "VerdanaEmbedded";
+	color: #FFFFFF;
+	textAlign: left;
+}
+Label.PositionStatus {
+	color: #FFFFFF;
+	fontSize: 12;
+	textAlign: left;
+}
+Label.DelayCaption {
+	color: #D3D3D3;
+	fontSize: 9;
+	textAlign: left;
+}
+Label.ZoomPercentCaption {
+	color: #D3D3D3;
+	fontSize: 9;
+	textAlign: left;
+}
+VRule.AppBarVerticalRule {
+	shadowColor: #6A8F93;
+	strokeWidth: 2;
+	strokeColor: #9EB7BC;
+}
+Button.pagedListPrev, Button.pagedListNext {
+	cornerRadius: 15;
+	borderColor: #333333;
+	highlightAlphas: #000000, #000000;
+	color: #ffffff;
+	themeColor: #333333;
+}
+Button.pagedListPrev {
+	icon: Embed(source="../assets/pagedListAssets.swf", symbol="PrevArrow");
+}
+Button.pagedListNext {
+	icon: Embed(source="../assets/pagedListAssets.swf", symbol="NextArrow");
+}
+/* PagedList {
+	proxy-duration: 250;
+	proxy-color: #999999;
+	proxy-alpha: .6;
+	spacing: 10;
+}		 */
+@font-face {
+	src: local("Verdana");
+	fontFamily: "VerdanaEmbedded";
+	fontWeight: normal;
+	fontStyle: normal;
+	unicodeRange:
+		U+0020-U+0040, /* Punctuation, Numbers */
+		U+0041-U+005A, /* Upper-Case A-Z */
+		U+005B-U+0060, /* Punctuation and Symbols */
+		U+0061-U+007A, /* Lower-Case a-z */
+		U+007B-U+007E, /* Punctuation and Symbols */
+		U+00AB-U+00BB; /* Left, right chevrons */
+}
+@font-face {
+	src: local("Verdana");
+	fontFamily: "VerdanaEmbedded";
+	fontWeight: bold;
+	fontStyle: normal;
+	unicodeRange:
+		U+0020-U+0040, /* Punctuation, Numbers */
+		U+0041-U+005A, /* Upper-Case A-Z */
+		U+005B-U+0060, /* Punctuation and Symbols */
+		U+0061-U+007A, /* Lower-Case a-z */
+		U+007B-U+007E; /* Punctuation and Symbols */
+}

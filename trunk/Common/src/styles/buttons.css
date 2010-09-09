@@ -1,0 +1,262 @@
+LinkButton.Returnto {
+	upSkin: Embed(source="../assets/skin.swf", symbol="Return_to");
+	downSkin: Embed(source="../assets/skin.swf", symbol="Return_to");
+	disabledSkin: Embed(source="../assets/skin.swf", symbol="Return_to");
+	overSkin: Embed(source="../assets/skin.swf", symbol="Return_to_over");
+}
+LinkButton.First {
+	upSkin: Embed(source="../assets/skin.swf", symbol="First");
+	downSkin: Embed(source="../assets/skin.swf", symbol="First");
+	disabledSkin: Embed(source="../assets/skin.swf", symbol="First_disabled");
+	overSkin: Embed(source="../assets/skin.swf", symbol="First_over");
+}
+LinkButton.FirstP2 {
+	upSkin: Embed(source="../assets/skin.swf", symbol="FirstP2");
+	downSkin: Embed(source="../assets/skin.swf", symbol="FirstP2");
+	disabledSkin: Embed(source="../assets/skin.swf", symbol="FirstP2_disabled");
+	overSkin: Embed(source="../assets/skin.swf", symbol="FirstP2_over");
+}
+LinkButton.Previous {
+	upSkin: Embed(source="../assets/skin.swf", symbol="Previous");
+	downSkin: Embed(source="../assets/skin.swf", symbol="Previous");
+	disabledSkin: Embed(source="../assets/skin.swf", symbol="Previous_disabled");
+	overSkin: Embed(source="../assets/skin.swf", symbol="Previous_over");
+}
+LinkButton.PreviousP2 {
+	upSkin: Embed(source="../assets/skin.swf", symbol="PreviousP2");
+	downSkin: Embed(source="../assets/skin.swf", symbol="PreviousP2");
+	disabledSkin: Embed(source="../assets/skin.swf", symbol="PreviousP2_disabled");
+	overSkin: Embed(source="../assets/skin.swf", symbol="PreviousP2_over");
+}
+LinkButton.Play {
+	upSkin: Embed(source="../assets/skin.swf", symbol="Play");
+	downSkin: Embed(source="../assets/skin.swf", symbol="Play");
+	disabledSkin: Embed(source="../assets/skin.swf", symbol="Play_disabled");
+	overSkin: Embed(source="../assets/skin.swf", symbol="Play_over");
+}
+LinkButton.PlayP2 {
+	upSkin: Embed(source="../assets/skin.swf", symbol="PlayP2");
+	downSkin: Embed(source="../assets/skin.swf", symbol="PlayP2");
+	disabledSkin: Embed(source="../assets/skin.swf", symbol="PlayP2_disabled");
+	overSkin: Embed(source="../assets/skin.swf", symbol="PlayP2_over");
+}
+LinkButton.Pause {
+	upSkin: Embed(source="../assets/skin.swf", symbol="Stop");
+	downSkin: Embed(source="../assets/skin.swf", symbol="Stop");
+	disabledSkin: Embed(source="../assets/skin.swf", symbol="Stop");
+	overSkin: Embed(source="../assets/skin.swf", symbol="Stop_over");
+}
+LinkButton.PauseP2 {
+	upSkin: Embed(source="../assets/skin.swf", symbol="StopP2");
+	downSkin: Embed(source="../assets/skin.swf", symbol="StopP2");
+	disabledSkin: Embed(source="../assets/skin.swf", symbol="StopP2");
+	overSkin: Embed(source="../assets/skin.swf", symbol="StopP2_over");
+}
+LinkButton.Next {
+	upSkin: Embed(source="../assets/skin.swf", symbol="Next");
+	downSkin: Embed(source="../assets/skin.swf", symbol="Next");
+	disabledSkin: Embed(source="../assets/skin.swf", symbol="Next_disabled");
+	overSkin: Embed(source="../assets/skin.swf", symbol="Next_over");
+}
+LinkButton.NextP2 {
+	upSkin: Embed(source="../assets/skin.swf", symbol="NextP2");
+	downSkin: Embed(source="../assets/skin.swf", symbol="NextP2");
+	disabledSkin: Embed(source="../assets/skin.swf", symbol="NextP2_disabled");
+	overSkin: Embed(source="../assets/skin.swf", symbol="NextP2_over");
+}
+LinkButton.Last {
+	upSkin: Embed(source="../assets/skin.swf", symbol="Last");
+	downSkin: Embed(source="../assets/skin.swf", symbol="Last");
+	disabledSkin: Embed(source="../assets/skin.swf", symbol="Last_disabled");
+	overSkin: Embed(source="../assets/skin.swf", symbol="Last_over");
+}
+LinkButton.LastP2 {
+	upSkin: Embed(source="../assets/skin.swf", symbol="LastP2");
+	downSkin: Embed(source="../assets/skin.swf", symbol="LastP2");
+	disabledSkin: Embed(source="../assets/skin.swf", symbol="LastP2_disabled");
+	overSkin: Embed(source="../assets/skin.swf", symbol="LastP2_over");
+}
+LinkButton.Exit {
+	upSkin: Embed(source="../assets/skin.swf", symbol="Exit");
+	downSkin: Embed(source="../assets/skin.swf", symbol="Exit");
+	disabledSkin: Embed(source="../assets/skin.swf", symbol="Exit");
+	overSkin: Embed(source="../assets/skin.swf", symbol="Exit_over");
+}
+LinkButton.Fullscreen {
+	upSkin: Embed(source="../assets/skin.swf", symbol="Fullscreen");
+	downSkin: Embed(source="../assets/skin.swf", symbol="Fullscreen");
+	disabledSkin: Embed(source="../assets/skin.swf", symbol="Fullscreen");
+	overSkin: Embed(source="../assets/skin.swf", symbol="Fullscreen_over");
+}
+LinkButton.ExitFullscreen {
+	upSkin: Embed(source="../assets/skin.swf", symbol="ExitFullscreen");
+	downSkin: Embed(source="../assets/skin.swf", symbol="ExitFullscreen");
+	disabledSkin: Embed(source="../assets/skin.swf", symbol="ExitFullscreen");
+	overSkin: Embed(source="../assets/skin.swf", symbol="ExitFullscreen_over");
+}
+LinkButton.Minimize {
+	upSkin: Embed(source="../assets/skin.swf", symbol="Minimize");
+	downSkin: Embed(source="../assets/skin.swf", symbol="Minimize");
+	disabledSkin: Embed(source="../assets/skin.swf", symbol="Minimize");
+	overSkin: Embed(source="../assets/skin.swf", symbol="Minimize_over");
+}
+LinkButton.MenuButton {
+	upSkin: Embed(source="../assets/skin.swf", symbol="Menu");
+	downSkin: Embed(source="../assets/skin.swf", symbol="Menu");
+	disabledSkin: Embed(source="../assets/skin.swf", symbol="Menu");
+	overSkin: Embed(source="../assets/skin.swf", symbol="Menu_over");
+}
+LinkButton.CloseMenuButton {
+	upSkin: Embed(source="../assets/skin.swf", symbol="CloseButton");
+	downSkin: Embed(source="../assets/skin.swf", symbol="CloseButton");
+	disabledSkin: Embed(source="../assets/skin.swf", symbol="CloseButton");
+	overSkin: Embed(source="../assets/skin.swf", symbol="CloseButton_over");
+}
+LinkButton.ThumbView {
+	upSkin: Embed(source="../assets/skin.swf", symbol="ThumbView");
+	downSkin: Embed(source="../assets/skin.swf", symbol="ThumbView");
+	disabledSkin: Embed(source="../assets/skin.swf", symbol="ThumbView");
+	overSkin: Embed(source="../assets/skin.swf", symbol="ThumbView_over");
+}
+LinkButton.DualMonitors {
+	upSkin: Embed(source="../assets/skin.swf", symbol="DualMonitor");
+	downSkin: Embed(source="../assets/skin.swf", symbol="DualMonitor");
+	disabledSkin: Embed(source="../assets/skin.swf", symbol="DualMonitor_disabled");
+	overSkin: Embed(source="../assets/skin.swf", symbol="DualMonitor_over");
+}
+LinkButton.ScreenMore {
+	upSkin: Embed(source="../assets/skin.swf", symbol="Screen_More");
+	downSkin: Embed(source="../assets/skin.swf", symbol="Screen_More");
+	disabledSkin: Embed(source="../assets/skin.swf", symbol="Screen_More");
+	overSkin: Embed(source="../assets/skin.swf", symbol="Screen_More_over");
+}
+LinkButton.PairwiseLinked {
+	upSkin: Embed(source="../assets/skin.swf", symbol="Pairwise_linked");
+	downSkin: Embed(source="../assets/skin.swf", symbol="Pairwise_linked");
+	disabledSkin: Embed(source="../assets/skin.swf", symbol="Pairwise_disabled");
+	overSkin: Embed(source="../assets/skin.swf", symbol="Pairwise_linked_over");
+}
+LinkButton.PairwiseUnlinked {
+	upSkin: Embed(source="../assets/skin.swf", symbol="Pairwise_unlinked");
+	downSkin: Embed(source="../assets/skin.swf", symbol="Pairwise_unlinked");
+	disabledSkin: Embed(source="../assets/skin.swf", symbol="Pairwise_disabled");
+	overSkin: Embed(source="../assets/skin.swf", symbol="Pairwise_unlinked_over");
+}
+LinkButton.YinYang {
+	upSkin: Embed(source="../assets/skin.swf", symbol="YinYang");
+	downSkin: Embed(source="../assets/skin.swf", symbol="YinYang");
+	disabledSkin: Embed(source="../assets/skin.swf", symbol="YinYang_disabled");
+	overSkin: Embed(source="../assets/skin.swf", symbol="YinYang_over");
+}
+LinkButton.YinYangFlipped {
+	upSkin: Embed(source="../assets/skin.swf", symbol="YinYangSecondary");
+	downSkin: Embed(source="../assets/skin.swf", symbol="YinYangSecondary");
+	disabledSkin: Embed(source="../assets/skin.swf", symbol="YinYang_disabled");
+	overSkin: Embed(source="../assets/skin.swf", symbol="YinYangSecondary_over");
+}
+LinkButton.ScreenMore {
+	upSkin: Embed(source="../assets/skin.swf", symbol="Screen_More");
+	downSkin: Embed(source="../assets/skin.swf", symbol="Screen_More");
+	disabledSkin: Embed(source="../assets/skin.swf", symbol="Screen_More");
+	overSkin: Embed(source="../assets/skin.swf", symbol="Screen_More_over");
+}
+LinkButton.ScreenBlank {
+	upSkin: Embed(source="../assets/skin.swf", symbol="Screen_Blank");
+	downSkin: Embed(source="../assets/skin.swf", symbol="Screen_Blank");
+	disabledSkin: Embed(source="../assets/skin.swf", symbol="Screen_Blank");
+	overSkin: Embed(source="../assets/skin.swf", symbol="Screen_Blank_over");
+}
+LinkButton.ScreenSingle {
+	upSkin: Embed(source="../assets/skin.swf", symbol="Screen_Single");
+	downSkin: Embed(source="../assets/skin.swf", symbol="Screen_Single");
+	disabledSkin: Embed(source="../assets/skin.swf", symbol="Screen_Single");
+	overSkin: Embed(source="../assets/skin.swf", symbol="Screen_Single_over");
+}
+LinkButton.ScreenSingleHSplit {
+	upSkin: Embed(source="../assets/skin.swf", symbol="Screen_Single_HSplit");
+	downSkin: Embed(source="../assets/skin.swf", symbol="Screen_Single_HSplit");
+	disabledSkin: Embed(source="../assets/skin.swf", symbol="Screen_Single_HSplit");
+	overSkin: Embed(source="../assets/skin.swf", symbol="Screen_Single_HSplit_over");
+}
+LinkButton.ScreenSingleVSplit {
+	upSkin: Embed(source="../assets/skin.swf", symbol="Screen_Single_VSplit");
+	downSkin: Embed(source="../assets/skin.swf", symbol="Screen_Single_VSplit");
+	disabledSkin: Embed(source="../assets/skin.swf", symbol="Screen_Single_VSplit");
+	overSkin: Embed(source="../assets/skin.swf", symbol="Screen_Single_VSplit_over");
+}
+LinkButton.PinButton {
+	upSkin: Embed(source="../assets/skin.swf", symbol="Pin");
+	downSkin: Embed(source="../assets/skin.swf", symbol="Pin");
+	disabledSkin: Embed(source="../assets/skin.swf", symbol="Pin");
+	overSkin: Embed(source="../assets/skin.swf", symbol="Pin_over");
+}
+LinkButton.PinnedButton {
+	upSkin: Embed(source="../assets/skin.swf", symbol="Pinned");
+	downSkin: Embed(source="../assets/skin.swf", symbol="Pinned");
+	disabledSkin: Embed(source="../assets/skin.swf", symbol="Pinned");
+	overSkin: Embed(source="../assets/skin.swf", symbol="Pinned_over");
+}
+LinkButton.SmallPinButton {
+	upSkin: Embed(source="../assets/skin.swf", symbol="SmallPin");
+	downSkin: Embed(source="../assets/skin.swf", symbol="SmallPin");
+	disabledSkin: Embed(source="../assets/skin.swf", symbol="SmallPin");
+	overSkin: Embed(source="../assets/skin.swf", symbol="SmallPin_over");
+}
+LinkButton.SmallPinnedButton {
+	upSkin: Embed(source="../assets/skin.swf", symbol="SmallPinned");
+	downSkin: Embed(source="../assets/skin.swf", symbol="SmallPinned");
+	disabledSkin: Embed(source="../assets/skin.swf", symbol="SmallPinned");
+	overSkin: Embed(source="../assets/skin.swf", symbol="SmallPinned_over");
+}
+LinkButton.ActualSize {
+	upSkin: Embed(source="../assets/skin.swf", symbol="ActualSize");
+	downSkin: Embed(source="../assets/skin.swf", symbol="ActualSize");
+	disabledSkin: Embed(source="../assets/skin.swf", symbol="ActualSize");
+	overSkin: Embed(source="../assets/skin.swf", symbol="ActualSize_over");
+}
+LinkButton.BestFit {
+	upSkin: Embed(source="../assets/skin.swf", symbol="BestFit");
+	downSkin: Embed(source="../assets/skin.swf", symbol="BestFit");
+	disabledSkin: Embed(source="../assets/skin.swf", symbol="BestFit");
+	overSkin: Embed(source="../assets/skin.swf", symbol="BestFit_over");
+}
+LinkButton.UpArrow {
+	upSkin: Embed(source="../styles/kingnarestyle.swf", symbol="NumericStepperUpArrow_upSkin");
+	downSkin: Embed(source="../styles/kingnarestyle.swf", symbol="NumericStepperUpArrow_downSkin");
+	disabledSkin: Embed(source="../styles/kingnarestyle.swf", symbol="NumericStepperUpArrow_disabledSkin");
+	overSkin: Embed(source="../styles/kingnarestyle.swf", symbol="NumericStepperUpArrow_overSkin");
+}
+LinkButton.DownArrow {
+	upSkin: Embed(source="../styles/kingnarestyle.swf", symbol="NumericStepperDownArrow_upSkin");
+	downSkin: Embed(source="../styles/kingnarestyle.swf", symbol="NumericStepperDownArrow_downSkin");
+	disabledSkin: Embed(source="../styles/kingnarestyle.swf", symbol="NumericStepperDownArrow_disabledSkin");
+	overSkin: Embed(source="../styles/kingnarestyle.swf", symbol="NumericStepperDownArrow_overSkin");
+}
+LinkButton.Info {
+	upSkin: Embed(source="../assets/skin.swf", symbol="Info");
+	downSkin: Embed(source="../assets/skin.swf", symbol="Info");
+	disabledSkin: Embed(source="../assets/skin.swf", symbol="Info");
+	overSkin: Embed(source="../assets/skin.swf", symbol="Info_over");
+}
+LinkButton.OpenSlideshow, LinkButton.Preferences, LinkButton.Login {
+	fontFamily: "VerdanaEmbedded";
+	fontSize: 11;
+	fontWeight: normal;
+	color: #FFFFFF;
+	rollOverColor: #75ADCD;
+	paddingTop: 4;
+	paddingLeft: 2;
+	paddingRight: 2;
+	paddingBottom: 2;
+	cornerRadius: 0;
+	verticalGap: 0;
+}
+LinkButton.OpenSlideshow {
+	icon: Embed(source="../assets/skin.swf", symbol="OpenSlideshow");
+}
+LinkButton.Preferences {
+	icon: Embed(source="../assets/skin.swf", symbol="Preferences");
+}
+LinkButton.Login {
+	icon: Embed(source="../assets/skin.swf", symbol="LoginButton");
+}

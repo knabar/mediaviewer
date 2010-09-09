@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<parameters>
+	<parameter name="mdid_url">http://did.cit.jmu.edu</parameter>
+	<parameter name="mdid_secure_url">https://did.cit.jmu.edu</parameter>
+	<parameter name="institution">James Madison University</parameter>
+	<parameter name="mdid_version" values="2|3">3</parameter>
+	<parameter name="security_mode" values="remote|local">remote</parameter>
+	<parameter name="execution_mode" values="air|browser|zinc">browser</parameter>
+	<parameter name="debugging_on" values="true|false">true</parameter>
+	<parameter name="flickr_api_url">http://api.flickr.com/services/rest/</parameter>
+	<parameter name="flickr_api_key">89976eefcde00efe02b20f6b848f6578</parameter>
+</parameters>

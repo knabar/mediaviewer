@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" 
+	xmlns:mate="http://mate.asfusion.com/"
+	layout="vertical" 	
+	title="MDID Login" 
+	styleName="Login"
+	showCloseButton="true"
+	creationComplete="init()"
+	>
+	
+	<mx:Script>
+		<![CDATA[
+    	import mx.core.UIComponent;
+    	import mx.validators.Validator;
+    	import org.mdid.mediaviewer.events.*;
+    	import mx.events.ValidationResultEvent;
+    	import mx.events.CloseEvent;
+    	
+    	[Embed(source="/assets/skin.swf", symbol="BusyBlocks")]
+    	[Bindable] public var busyAnimation:Class;
+    	[Embed(source="/assets/skin.swf", symbol="Encrypted")]
+    	[Bindable] public var encrypted:Class;
+    	[Embed(source="/assets/skin.swf", symbol="ClearText")]
+    	[Bindable] public var cleartext:Class;
+    	
+    	[Bindable] private var errorMessage:String = "";
+    	[Bindable] public var isServerContacted:Boolean = false;
+    	[Bindable] public var secureLoginRequired:Boolean;
+    	[Bindable] public var isLoggedIn:Boolean = false;
+    	
+    	private function init():void {
+    		focusManager.setFocus(this.username);
+    		if (!isServerContacted) {
+    			currentState = "handshakingState";
+    		} else if (this.isLoggedIn) {
+				currentState = "loggedInState";    			
+    		}
+    	}
+		private function loginUser() : void {
+				currentState = "authenticatingState";
+				loginDispatcher.type = secureLoginRequired ? LoginEvent.SSL_LOGIN : LoginEvent.LOGIN
+				loginDispatcher.generateEvent();
+		}
+		private function logoutUser():void {
+			var logoutEvent:LoginEvent = new LoginEvent(LoginEvent.LOGOUT);
+			myDispatcher.dispatchEvent(logoutEvent);
+			currentState = "";
+			this.title = "MDID Login (you are logged out)";
+			this.isLoggedIn = false;
+		}
+		private function checkLoginResult(result:Object):void {
+			if (result.resultCode != "SUCCESS") {
+				errorMessage = "ERROR: " + result.errorMessage + " Please check your username and password, then try again.";
+				currentState = "errorState";
+				clearForm(true);
+				this.isLoggedIn = false
+			} else {
+				currentState = "successState";
+				loginForm.defaultButton = doneBtn;
+				doneBtn.setFocus();
+				this.isLoggedIn = true;
+			}
+		}
+		private function handleError(result:Object):void {
+			errorMessage = "ERROR (" + result.faultString + "). Please verify your MDID URL under Preferences, then try again.";
+			currentState = "errorState";
+			clearForm(true);
+			trace("error object: " + result.faultString);
+		}
+		private function handleServerContactEstablished():void {
+			if (currentState == "handshakingState") {
+				currentState == "";
+			}
+		}
+		private function clearForm(keepUserName:Boolean):void {
+			username.text = keepUserName ? username.text : "";
+			username.errorString = "";
+			password.text = "";
+			password.errorString = "";
+		}
+		]]>
+	</mx:Script>
+
+	<!-- Listeners and Dispatchers  -->
+	<mate:Dispatcher id="loginDispatcher" generator="{LoginEvent}">
+		<mate:ResponseHandler type="loginResultResponse" response="checkLoginResult(event.loginResult)" />
+		<mate:ResponseHandler type="errorResponse" response="handleError(event.errorResult)" />
+		<mate:eventProperties>
+			<mate:EventProperties  username="{username.text}" password="{password.text}" />
+		</mate:eventProperties>
+	</mate:Dispatcher>
+	<mate:Dispatcher id="myDispatcher"/>
+	<mate:Listener type="{AppStatusEvent.SERVER_CONTACT_ESTABLISHED}" method="handleServerContactEstablished"/>
+
+	<!-- Main GUI  -->
+	<mx:VBox id="main" paddingTop="15" paddingBottom="15" horizontalAlign="center" verticalGap="0" verticalAlign="top">
+		<mx:Form id="loginForm" defaultButton="{loginBtn}" verticalGap="5"  paddingBottom="10" >
+		  	<mx:FormItem id="form_username" label="Username:" required="true" paddingBottom="10">
+		   		<mx:TextInput id="username" text="" enter="loginUser()"/>
+		   	</mx:FormItem>
+		   	<mx:FormItem id="form_password" label="Password:" required="true" paddingBottom="10">
+		   		<mx:TextInput id="password" displayAsPassword="true" text="" enter="loginUser()"/>
+		   	</mx:FormItem>
+		   	<mx:FormItem id="formbuttons" direction="horizontal" verticalGap="0" horizontalGap="10">
+		   		<mx:Button id="loginBtn" label="Login" click="loginUser()" icon="{secureLoginRequired ? encrypted : cleartext}" horizontalGap="0" paddingLeft="3"/>
+		   		<mx:Button id="clearBtn" label="Clear" click="clearForm(false)"/>
+		   	</mx:FormItem>
+		</mx:Form>
+	</mx:VBox>
+	
+	<!-- Validators  -->
+	<mx:Array id="validators">
+		<mx:StringValidator id="vUsername" source="{username}" property="text" required="true"/>
+	    <mx:StringValidator id="vPassword" source="{password}" property="text" required="true"/>
+	</mx:Array>
+	
+	<!-- States  -->
+	<mx:states>
+		<mx:State name="loggedInState">
+			<mx:RemoveChild target="{form_username}"/>
+			<mx:RemoveChild target="{form_password}"/>
+			<mx:RemoveChild target="{loginBtn}"/>
+			<mx:RemoveChild target="{clearBtn}"/>
+			<mx:AddChild relativeTo="{loginForm}" position="before">
+				<mx:Text maxWidth="275" width="100%" styleName="MessageOnBlack" text='You are logged into MDID. Click the "Logout" button below to logout.' paddingBottom="10" paddingTop="10" paddingLeft="5" paddingRight="5" />
+			</mx:AddChild>
+			<mx:AddChild relativeTo="{formbuttons}" position="lastChild">
+				<mx:Button label="Logout" id="logoutBtn2" click="logoutUser();"/>
+			</mx:AddChild>
+			<mx:AddChild relativeTo="{formbuttons}" position="lastChild">
+				<mx:LinkButton id="closeBtn" label="(Close this window)" click="dispatchEvent(new CloseEvent(CloseEvent.CLOSE));" cornerRadius="2"/>
+			</mx:AddChild>
+		</mx:State>
+		<mx:State name="errorState">
+			<mx:AddChild relativeTo="{loginForm}" position="after">
+				<mx:Text maxWidth="275" width="100%" styleName="MessageOnBlack" text="{errorMessage}" paddingBottom="10" paddingTop="0" paddingLeft="5" paddingRight="5" />
+			</mx:AddChild>
+			<mx:SetProperty target="{loginBtn}" name="enabled" value="true"/>
+			<mx:SetProperty target="{clearBtn}" name="enabled" value="true"/>
+		</mx:State>
+		<mx:State name="successState">
+			<mx:AddChild relativeTo="{loginForm}" position="after">
+				<mx:Text maxWidth="275" width="100%" styleName="MessageOnBlack" text="SUCCESS: You are now logged into MDID." paddingBottom="10" paddingTop="0" paddingLeft="5" paddingRight="5" />
+			</mx:AddChild>
+			<mx:RemoveChild target="{loginBtn}"/>
+			<mx:RemoveChild target="{clearBtn}"/>
+			<mx:AddChild relativeTo="{formbuttons}" position="lastChild">
+				<mx:Button label="Done" id="doneBtn" click="dispatchEvent(new CloseEvent(CloseEvent.CLOSE));"/>
+			</mx:AddChild>
+			<mx:AddChild relativeTo="{formbuttons}" position="lastChild">
+				<mx:LinkButton id="logoutBtn" label="(Logout)" click="logoutUser()" cornerRadius="2"/>
+			</mx:AddChild>
+		</mx:State>
+		<mx:State name="handshakingState">
+			<mx:AddChild relativeTo="{main}" position="lastChild">
+				<mx:Text maxWidth="275" width="100%" styleName="MessageOnBlack" text="Contacting your MDID server...please wait." paddingBottom="10" paddingTop="0" paddingLeft="5" paddingRight="5" />
+			</mx:AddChild>
+			<mx:AddChild relativeTo="{main}" position="lastChild">
+				<mx:Image source="{busyAnimation}" />
+			</mx:AddChild>
+			<mx:SetProperty target="{loginBtn}" name="enabled" value="false"/>
+			<mx:SetProperty target="{clearBtn}" name="enabled" value="false"/>
+		</mx:State>
+		<mx:State name="authenticatingState">
+			<mx:AddChild relativeTo="{main}" position="lastChild">
+				<mx:Text maxWidth="275" width="100%" styleName="MessageOnBlack" text="Authenticating...please wait." paddingBottom="10" paddingTop="0" paddingLeft="10" paddingRight="5" />
+			</mx:AddChild>
+			<mx:AddChild relativeTo="{main}" position="lastChild">
+				<mx:Image source="{busyAnimation}" />
+			</mx:AddChild>
+			<mx:SetProperty target="{loginBtn}" name="enabled" value="false"/>
+			<mx:SetProperty target="{clearBtn}" name="enabled" value="false"/>
+		</mx:State>
+	</mx:states>
+	
+</mx:TitleWindow>

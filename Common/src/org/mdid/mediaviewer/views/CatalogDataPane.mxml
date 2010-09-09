@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<flexlib:MDIWindow xmlns:mx="http://www.adobe.com/2006/mxml" 
+	xmlns:flexlib="flexlib.mdi.containers.*"
+	xmlns:mate="http://mate.asfusion.com/"
+	layout="vertical"
+	styleName="CatalogDataWindow"
+	backgroundAlpha="1.0"
+	width="250" height="300"
+	backgroundColor="{backColor}"
+	creationComplete="init()"
+	>
+	<mx:Script>
+		<![CDATA[
+		import mx.managers.IFocusManager;
+		import mx.managers.FocusManager;
+		import mx.events.FocusRequestDirection;
+		import flexlib.mdi.events.MDIWindowEvent;
+		import mx.binding.utils.ChangeWatcher;
+		import mx.binding.utils.BindingUtils;
+		
+		private const WHITE:uint = 0xFFFFFF;
+		private const BLACK:uint = 0x000000;
+		private const CONTENT_DEL:String = "<P>--------------------</P>";
+		
+		[Bindable]
+		public var panePosition:int;
+
+		[Bindable]
+		public var catalogDataAsHtmlBlock1:String;
+		[Bindable]
+		public var notesDataAsHtmlBlock1:String;
+		[Bindable]
+		public var contentAsHtmlBlock1:String;
+		[Bindable]
+		public var windowTitle1:String = "N/A";
+		[Bindable]
+		public var catalogDataAsHtmlBlock2:String;
+		[Bindable]
+		public var notesDataAsHtmlBlock2:String;
+		[Bindable]
+		public var contentAsHtmlBlock2:String;
+		[Bindable]
+		public var windowTitle2:String = "N/A";
+		
+		[Bindable]
+		private var backColor:uint = BLACK;
+		[Bindable] 
+		private var _fontSize:int = 12;
+
+		private var cssWhite:StyleSheet = new StyleSheet();
+		private var cssBlack:StyleSheet = new StyleSheet();
+
+		private function init():void {
+			var paragraph:Object = new Object();
+			paragraph.fontFamily = "VerdanaEmbedded";
+			paragraph.embedFonts = true;
+			paragraph.color = "#FFFFFF";
+			paragraph.marginLeft = "10";
+			paragraph.textIndent = "-10";
+			cssWhite.setStyle("P", paragraph);
+			paragraph.color = "#000000";
+			cssBlack.setStyle("P", paragraph);			
+			this.mainText.styleSheet = cssWhite;
+			this.backColor = BLACK;
+			if (this.panePosition == 1) {
+				BindingUtils.bindProperty(this, "title", this, "windowTitle1");
+				BindingUtils.bindProperty(this.mainText, "htmlText", this, "contentAsHtmlBlock1");
+				ChangeWatcher.watch(this, "catalogDataAsHtmlBlock1", catalogDataChanged1);
+				buildHtmlContent1(this.windowControls.displayInfoCbox.selected, this.windowControls.displayNotesCbox.selected);
+			}
+			if (this.panePosition == 2) {
+				BindingUtils.bindProperty(this, "title", this, "windowTitle2");				
+				BindingUtils.bindProperty(this.mainText, "htmlText", this, "contentAsHtmlBlock2");
+				ChangeWatcher.watch(this, "catalogDataAsHtmlBlock2", catalogDataChanged2);
+				buildHtmlContent2(this.windowControls.displayInfoCbox.selected, this.windowControls.displayNotesCbox.selected);
+			}
+			this.mainText.validateNow();
+		}
+		private function catalogDataChanged1(e:Event):void {
+			if (this.panePosition != 1) return;
+			buildHtmlContent1(this.windowControls.displayInfoCbox.selected, this.windowControls.displayNotesCbox.selected);
+		}
+		private function catalogDataChanged2(e:Event):void {
+			if (this.panePosition != 2) return;
+			buildHtmlContent2(this.windowControls.displayInfoCbox.selected, this.windowControls.displayNotesCbox.selected);
+		}
+		private var hiliteColor:uint = 0x3B3B3B;
+		private function handleBackgroundHilite(e:Event):void {
+			if (this.backColor == WHITE) return;
+			if (e.type == MouseEvent.MOUSE_DOWN) {
+				this.backColor = this.hiliteColor;
+			} else if (e.type == MouseEvent.MOUSE_UP) {
+				if (this.mainText.selectionBeginIndex >= this.mainText.selectionEndIndex) {
+					this.backColor = (this.mainText.styleSheet == this.cssWhite) ? BLACK : WHITE;
+				}
+			} else if (e.type == FocusEvent.FOCUS_OUT) {
+				this.backColor = (this.mainText.styleSheet == this.cssWhite) ? BLACK : WHITE;
+			}
+			this.mainText.validateNow();
+		}
+		private function toggleFontsize(e:MDIWindowEvent):void {
+			if (e.panePosition != this.panePosition) return;
+			//must remove stylesheet or fontsize won't "take" (bug in Flex)
+			var temp:StyleSheet = this.mainText.styleSheet;
+			this.mainText.styleSheet = null;
+			_fontSize = (_fontSize == 12) ? 14 : 12;
+			this.mainText.validateNow();
+			this.mainText.styleSheet = temp;
+		}
+		private function toggleFontcolor(e:MDIWindowEvent):void {
+			if (e.panePosition != this.panePosition) return;
+			//must remove stylesheet or fontsize won't "take" (bug in Flex)
+			var temp:StyleSheet = (this.mainText.styleSheet == this.cssBlack) ? this.cssWhite : this.cssBlack;
+			this.mainText.styleSheet = null;
+			this.backColor = (temp == this.cssWhite) ? BLACK : WHITE;
+			this.mainText.validateNow();
+			this.mainText.styleSheet = temp;
+		}
+		private function buildHtmlContent1(showInfo:Boolean, showNotes:Boolean):void {
+			this.contentAsHtmlBlock1 = "";
+			if (showInfo && this.catalogDataAsHtmlBlock1 != null && this.catalogDataAsHtmlBlock1.length > 0) {
+				this.contentAsHtmlBlock1 += this.catalogDataAsHtmlBlock1;
+			}
+			this.contentAsHtmlBlock1 += this.CONTENT_DEL;
+			if (showNotes && this.notesDataAsHtmlBlock1 != null && this.notesDataAsHtmlBlock1.length>0) {
+				this.contentAsHtmlBlock1 += this.notesDataAsHtmlBlock1;
+			}
+		}
+		private function buildHtmlContent2(showInfo:Boolean, showNotes:Boolean):void {
+			this.contentAsHtmlBlock2 = "";
+			if (showInfo && this.catalogDataAsHtmlBlock2 != null && this.catalogDataAsHtmlBlock2.length > 0) {
+				this.contentAsHtmlBlock2 += this.catalogDataAsHtmlBlock2;
+			}
+			this.contentAsHtmlBlock2 += this.CONTENT_DEL;
+			if (showNotes && this.notesDataAsHtmlBlock2 != null && this.notesDataAsHtmlBlock2.length>0) {
+				this.contentAsHtmlBlock2 += this.notesDataAsHtmlBlock2;
+			}
+		}
+		private function toggleDisplayInfoNotes(e:MDIWindowEvent):void {
+			if (e.panePosition != this.panePosition) return;
+			if (this.panePosition == 1) {
+				buildHtmlContent1(this.windowControls.displayInfoCbox.selected, this.windowControls.displayNotesCbox.selected);
+			} else {
+				buildHtmlContent2(this.windowControls.displayInfoCbox.selected, this.windowControls.displayNotesCbox.selected);
+			}
+			
+		}
+		
+		]]>
+	</mx:Script>
+
+	<!-- Listeners and Dispatchers  -->
+	<mate:Listener type="{MDIWindowEvent.FONTSIZE}" receive="toggleFontsize(event)"/>
+	<mate:Listener type="{MDIWindowEvent.FONTCOLOR}" receive="toggleFontcolor(event)"/>
+	<mate:Listener type="{MDIWindowEvent.DISPLAYINFONOTES}" receive="toggleDisplayInfoNotes(event)"/>
+
+	<mx:VBox width="100%" height="100%" paddingTop="0" paddingLeft="0" paddingBottom="0" paddingRight="0" cornerRadius="1" horizontalAlign="center" verticalAlign="bottom" verticalGap="2">
+		<mx:TextArea id="mainText" fontSize="{_fontSize}" mouseDown="handleBackgroundHilite(event)" mouseUp="handleBackgroundHilite(event)" focusOut="handleBackgroundHilite(event)" width="100%" height="100%" horizontalScrollPolicy="off" verticalScrollPolicy="auto" selectable="true" editable="false" paddingLeft="2" paddingRight="2" wordWrap="true"/>	
+	</mx:VBox>
+	
+</flexlib:MDIWindow>

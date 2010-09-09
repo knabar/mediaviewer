@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:ApplicationControlBar xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:reflector="com.rictus.reflector.*"
+	width="100%" height="35"
+	styleName="TopLegendBar">
+
+	<mx:Script>
+		<![CDATA[
+			import mx.effects.Move;
+		
+			[Bindable]
+			public var mainTitle:String;
+			
+			private function handlePinClick():void {
+				rollAppBar.end();
+				rollAppBar.yTo = -35;
+				rollAppBar.play();
+				//rollAppBar.reverse();
+			}
+		]]>
+	</mx:Script>
+	<mx:Move id="rollAppBar" target="{this}"/>
+	<mx:HBox horizontalAlign="left" verticalAlign="middle" horizontalGap="0" width="100">
+		<mx:VBox verticalGap="0">
+			<mx:LinkButton id="info" enabled="true" styleName="Info" paddingTop="3"/>
+			<reflector:Reflector target="{info}" alpha=".4" falloff=".4" blurAmount=".1"/>			
+		</mx:VBox>
+	</mx:HBox>
+	<mx:HBox horizontalAlign="center" verticalAlign="middle" horizontalGap="0" width="100%">
+		<mx:VBox verticalGap="0">
+			<mx:Label id="main_title" text="{mainTitle}" styleName="MainTitle" height="19" paddingTop="1"/>
+			<reflector:Reflector target="{main_title}" alpha=".4" falloff=".4" blurAmount=".1"/>
+		</mx:VBox>
+	</mx:HBox>
+	<mx:HBox horizontalAlign="right" verticalAlign="middle" horizontalGap="3" width="100">
+		<mx:VBox verticalGap="0">
+			<mx:LinkButton id="minimize" enabled="true" styleName="Minimize" paddingTop="3"/>
+			<reflector:Reflector target="{minimize}" alpha=".4" falloff=".4" blurAmount=".1"/>			
+		</mx:VBox>
+		<mx:VBox verticalGap="0">
+			<mx:LinkButton id="fullscreen" enabled="true" styleName="Fullscreen" paddingTop="3"/>
+			<reflector:Reflector target="{fullscreen}" alpha=".4" falloff=".4" blurAmount=".1"/>			
+		</mx:VBox>
+		<mx:VBox verticalGap="0">
+			<mx:LinkButton id="exit" enabled="true" styleName="Exit" paddingTop="3"/>
+			<reflector:Reflector target="{exit}" alpha=".4" falloff=".4" blurAmount=".1"/>			
+		</mx:VBox>
+		<mx:Spacer width="6"/>
+		<mx:VBox verticalGap="0">
+			<mx:LinkButton id="smallpinbutton" enabled="true" click="handlePinClick()" styleName="SmallPinButton" paddingTop="3"/>
+			<reflector:Reflector target="{smallpinbutton}" alpha=".4" falloff=".4" blurAmount=".1"/>			
+		</mx:VBox>
+	</mx:HBox>
+	
+</mx:ApplicationControlBar>

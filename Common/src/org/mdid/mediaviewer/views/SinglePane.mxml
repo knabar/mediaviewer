@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:flexlib="flexlib.mdi.containers.*"
+	xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:views="org.mdid.mediaviewer.views.*"
+	xmlns:mate="http://mate.asfusion.com/"
+	width="100%" height="100%"
+	horizontalScrollPolicy="off" verticalScrollPolicy="off"
+	backgroundColor="0x000000"
+	creationComplete="init()">
+	
+	<mx:Script>
+		<![CDATA[
+			import org.mdid.mediaviewer.events.EdgeControlsEvent;
+		import mx.events.ResizeEvent;
+		import com.asfusion.mate.core.Property;
+		import flexlib.mdi.managers.MDIManager;
+		import flexlib.mdi.events.MDIManagerEvent;
+		import org.mdid.mediaviewer.events.SlideshowEvent;
+		import org.mdid.mediaviewer.events.ControlBarClickEvent;
+		import org.mdid.mediaviewer.views.CatalogDataPane;
+		import org.mdid.mediaviewer.vo.MdidContextMenu;
+ 		import mx.events.CloseEvent;
+   	
+     	[Embed(source="/assets/skin.swf", symbol="Working")]
+    	[Bindable]
+    	public var busyAnimation:Class;
+    	[Bindable]
+    	public var isTopBarPinned:Boolean;
+    	[Bindable]
+    	public var isAppBarPinned:Boolean;
+    	[Bindable]
+    	public var appState:String;
+    	
+	   	private var pendingFile:Object = new Object();
+	   	private var mdidContextMenu:MdidContextMenu;
+	   	
+	   	public var isInitialized:Boolean = false;
+	   	private function init():void {
+	   		this.mdidContextMenu  = new MdidContextMenu(this, "SinglePane", this.myDispatcher);
+			this.addEventListener(ResizeEvent.RESIZE, clipCatWindow);
+			catWindow = new CatalogDataPane();
+			catWindow.panePosition = 1;
+			catPaneHolder.windowManager.add(catWindow);
+			positionCatWindow(false);
+			this.isInitialized = true;
+	   	}
+	   	private function removeImage():void {
+			if (this.image1.imageURL != "") {
+				this.image1.imageURL = "";
+			}
+	   	}
+		private function handleUpdateImage(e:SlideshowEvent, image:ImageHolder, box:Box, pendingFile:Object):void {
+			if (appState != "single") return;
+			image.missingImageGraphic.visible = !e.isImageValid;
+			if (!e.isImageValid) {
+				box.visible = false;
+				removeImage();
+				return;
+			}
+			if (e.imageObject.cachingImage) {
+				pendingFile.filename = e.imageObject.filename;
+				pendingFile.url = e.imageObject.url;
+				box.visible = true;
+			} else {
+				box.visible = false;
+				image.imageURL = e.imageObject.url;
+			}
+		}
+		private function handleImageDownloadComplete(filename:String, image:ImageHolder, box:Box, pendingFile:Object):void {
+			if (filename == pendingFile.filename) {
+				box.visible = false;
+				image.imageURL = pendingFile.url;
+			}
+		}
+		
+		public var catWindow:CatalogDataPane;
+		private function handleShowCatData(e:Event):void {
+			if (appState != "single") return;
+			catWindow.visible = !catWindow.visible;
+			if (catWindow.visible) clipCatWindow();
+		}
+		private function clipCatWindow(e:Event = null):void {
+			if (appState != "single" || !catWindow.visible) return;
+			if (catWindow.x + catWindow.width > catPaneHolder.width) {
+				if (catWindow.x > 0) {
+					catWindow.x = (catPaneHolder.width - catWindow.width) > 0 ? (catPaneHolder.width - catWindow.width) : 0;
+				} 
+				if (catWindow.width > catPaneHolder.width) {
+					catWindow.width = catPaneHolder.width < 225 ? 225 : catPaneHolder.width;
+				}
+			}
+			if (catWindow.y + catWindow.height > catPaneHolder.height) {
+				if (catWindow.y > 0) {
+					catWindow.y = (catPaneHolder.height - catWindow.height) > 0 ? (catPaneHolder.height - catWindow.height) : 0;
+				} 
+				if (catWindow.height > catPaneHolder.height) {
+					catWindow.height = catPaneHolder.height < 225 ? 225 : catPaneHolder.height;
+				}
+			}
+		}
+		public function positionCatWindow(showWindow:Boolean=false):void {
+			this.catWindow.x = 60;
+			this.catWindow.y = 6;
+			this.catWindow.width = 250;
+			this.catWindow.height = 300;
+			this.catWindow.visible = showWindow;
+			clipCatWindow();
+		}
+		private function hideSlides():void {
+			if (appState != "single") return;
+			this.blank.visible = !this.blank.visible;
+			//this.mdidContextMenu.updateShowHideItem(!this.blank.visible);
+		}
+		private function showBusyAnimation(numSlides:int):void {
+			this.busyBox.visible = (numSlides > 0);
+		}
+		]]>
+	</mx:Script>
+	
+	<!-- Listeners and Dispatchers  -->
+	<mate:Listener type="{SlideshowEvent.UPDATE_IMAGE_1}" receive="handleUpdateImage(event, this.image1, this.busyBox, this.pendingFile)"/>
+	<mate:Listener type="{SlideshowEvent.IMAGE_CACHING_COMPLETE}" receive="handleImageDownloadComplete(event.cachedFileName, this.image1, this.busyBox, this.pendingFile)"/>
+	<mate:Listener type="{SlideshowEvent.SHOW_CATALOG_DATA_1}" receive="handleShowCatData(event)"/>
+	<mate:Listener type="{SlideshowEvent.REMOVE_IMAGES}" receive="removeImage()"/>
+	<mate:Listener type="{SlideshowEvent.SLIDESHOW_LOAD_COMPLETE}" receive="showBusyAnimation(event.numSlides)" />
+	<mate:Listener type="{ControlBarClickEvent.BLANK_VIEW}" receive="hideSlides()" />
+	<mate:Dispatcher id="myDispatcher"/>
+	
+	<mx:Container id="mainBoxMask" backgroundColor="0x000000" includeInLayout="false" x="{mainBox.x}"  y="{mainBox.y}" width="{mainBox.width}" height="{mainBox.height}" cacheAsBitmap="true"/>
+	<mx:Box id="mainBox" width="100%" height="100%" minHeight="260" minWidth="260" clipContent="false" mask="{this.mainBoxMask}" horizontalScrollPolicy="off" verticalScrollPolicy="off">
+		<views:ImageHolder id="image1" isTopBarPinned="{this.isTopBarPinned}" panePosition="1" imageURL=""  smoothBitmap="true" horizontalScrollPolicy="off" verticalScrollPolicy="off"/>
+	</mx:Box>
+
+	<views:ImageDisplayBorder id="borderControls" isAppBarPinned="{this.isAppBarPinned}" isTopBarPinned="{this.isTopBarPinned}"  includeInLayout="false" width="100%" height="100%" paneLocation="single" panePosition="1" zoomInEnabled="{this.image1.zoomIn.enabled}" zoomOutEnabled="{this.image1.zoomOut.enabled}" horizontalScrollPolicy="off" verticalScrollPolicy="off"/>
+
+	<mx:Box id="busyBox" includeInLayout="false" width="100%" height="100%" visible="false" verticalAlign="middle" horizontalAlign="center" horizontalScrollPolicy="off" verticalScrollPolicy="off">
+		<mx:Image source="{busyAnimation}"/>
+	</mx:Box>
+
+	<flexlib:MDICanvas id="catPaneHolder" includeInLayout="false" width="{borderControls.width}" height="{borderControls.height - (isTopBarPinned ? 0 : 35) - (isAppBarPinned ? 0 : 45)}" x="0" y="{borderControls.y + (isTopBarPinned ? 0: 35)}" horizontalScrollPolicy="off" verticalScrollPolicy="off" />
+	<mx:Canvas id="blank" height="{mainBox.height}" width="{mainBox.width}" backgroundColor="#000000" includeInLayout="false" visible="false"/>
+
+</mx:Canvas>

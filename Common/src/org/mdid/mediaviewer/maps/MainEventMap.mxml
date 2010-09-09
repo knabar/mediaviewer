@@ -1,0 +1,396 @@
+<?xml version="1.0" encoding="utf-8"?>
+<EventMap xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns="http://mate.asfusion.com/"
+	xmlns:business="org.mdid.mediaviewer.business.*">
+	
+	<mx:Script>
+		<![CDATA[
+		import mx.events.FlexEvent;
+		import org.mdid.mediaviewer.business.*;
+		import org.mdid.mediaviewer.views.*;
+		import org.mdid.mediaviewer.events.*;
+		import org.mdid.mediaviewer.vo.*;
+		import flexlib.mdi.events.MDIWindowEvent;
+
+		[Bindable]
+		private var mdidTarget:String;
+
+		]]>
+	</mx:Script>
+	
+	<!-- Debugger  -->
+	<!-- remove during production. This tag can be placed here or in your main application -->
+	<Debugger level="{Debugger.ALL}" />
+	
+	<!-- the services used by this app -->
+	<business:Services id="services"/>
+	
+	<!-- FlexEvent.PREINITIALIZE  -->
+	<!-- These objects must be built in the specified order -->
+	 <EventHandlers type="{FlexEvent.PREINITIALIZE}" debug="false">
+		<ObjectBuilder generator="{AuthorizationManager}" constructorArguments="{scope.dispatcher}" cache="global"/>
+		<ObjectBuilder generator="{CacheManager}" constructorArguments="{scope.dispatcher}" cache="global" />
+		<ObjectBuilder generator="{SlideshowManager}" constructorArguments="{[scope.dispatcher, lastReturn]}" cache="global"/>
+		<ObjectBuilder generator="{StatusManager}" constructorArguments="{scope.dispatcher}" cache="global"/>	
+		<ObjectBuilder generator="{ButtonSyncManager}" constructorArguments="{scope.dispatcher}" cache="global"/>	
+		<ObjectBuilder generator="{Slideshows}"/>
+	 </EventHandlers>
+
+	<!-- FlexEvent.INITIALIZE  -->
+	<!-- application initialize phase -->
+	<EventHandlers type="{FlexEvent.INITIALIZE}" debug="false">
+		<ObjectBuilder generator="{ParamsManager}" constructorArguments="{scope.dispatcher}" cache="global"/>
+		<MethodInvoker generator="{ParamsManager}" method="loadPrefs" cache="global"/>
+	</EventHandlers>
+	
+	<!-- FlexEvent.APPLICATION_COMPLETE  -->
+	<!-- application complete -->
+	<EventHandlers type="{FlexEvent.APPLICATION_COMPLETE}" debug="false">
+		<EventAnnouncer generator="{AppStatusEvent}" type="{AppStatusEvent.CALC_BUTTON_STATES}">
+			<Properties curSlideIdx1="0" curSlideIdx2="0" numSlides="0" cachingIdx="0" slideshowIsPlaying="false"/>
+		</EventAnnouncer>
+	</EventHandlers>
+		
+	<!-- AppStatusEvent.CALC_BUTTON_STATES  -->
+	<!-- Calculate and synchronize button states -->
+	<EventHandlers type="{AppStatusEvent.CALC_BUTTON_STATES}" debug="false">
+		  <MethodInvoker generator="{ButtonSyncManager}" method="syncButtons" arguments="{[event.curSlideIdx1, event.curSlideIdx2, event.numSlides, event.cachingIdx, event.slideshowIsPlaying, event.isPairwiseModeEnabled]}"/>
+	</EventHandlers>
+		
+	<!-- AppStatusEvent.REFRESH_SESSION  -->
+	<!-- if running in a browser, refresh browser session -->
+	<EventHandlers type="{AppStatusEvent.REFRESH_SESSION}" debug="false">
+		<MethodInvoker generator="{StatusManager}" method="refreshSession" />
+	</EventHandlers>
+	
+	<!-- AppStatusEvent.INVOKE_REFRESH_SESSION_HTTPSERVICE_MDID2  -->
+	<!-- Run the "refreshSession" HTTP service for MDID2 -->
+	<EventHandlers type="{AppStatusEvent.INVOKE_REFRESH_SESSION_HTTPSERVICE_MDID2}" debug="false">
+		<HTTPServiceInvoker instance="{this.services.refreshBrowserSession}" debug="false"/>
+	</EventHandlers>
+	
+	<!-- AppStatusEvent.INVOKE_REFRESH_SESSION_HTTPSERVICE_MDID3  -->
+	<!-- Run the "refreshSession" HTTP service for MDID3 -->
+	<EventHandlers type="{AppStatusEvent.INVOKE_REFRESH_SESSION_HTTPSERVICE_MDID3}" debug="false">
+		<MethodInvoker generator="{StatusManager}" method="updateKeepAliveUrl"/>
+		<DataCopier destination="{services}" destinationKey="keepAliveUrl" source="{StatusManager}" sourceKey="keepAliveUrl"/>
+		<HTTPServiceInvoker instance="{this.services.jsonServiceKeepAlive}" debug="false">
+			<resultHandlers>
+				<MethodInvoker generator="{StatusManager}" method="handleIsSessionAliveMDID3" arguments="{[resultObject]}" />
+			</resultHandlers>
+			<faultHandlers>
+				<MethodInvoker generator="{StatusManager}" method="handleFault" arguments="{[fault]}"/>
+			</faultHandlers>
+		</HTTPServiceInvoker>
+	</EventHandlers>
+	
+	<!-- AppStatusEvent.LOAD_PREFS_FILE  -->
+	<!-- if running in a browser, load prefs file with this service -->
+	<EventHandlers type="{AppStatusEvent.LOAD_PREFS_FILE}">
+		<HTTPServiceInvoker instance="{this.services.prefsFile}" debug="false">
+			<resultHandlers>
+				<MethodInvoker generator="{ParamsManager}" method="parseXml" arguments="{resultObject}"/>
+			</resultHandlers>
+		</HTTPServiceInvoker>
+	</EventHandlers>
+	
+	<!-- AppStatusEvent.PREFS_FILE_LOAD_COMPLETE  -->
+	<!-- runs after the prefs file is parsed -->
+	<EventHandlers type="{AppStatusEvent.PREFS_FILE_LOAD_COMPLETE}" debug="false">
+		<DataCopier destination="{services}" destinationKey="mdidUrl" source="{ParamsManager}" sourceKey="serverUrl"/>
+		<DataCopier destination="{services}" destinationKey="secureMdidUrl" source="{ParamsManager}" sourceKey="secureServerUrl"/>
+		<DataCopier destination="{SlideshowManager}" destinationKey="contentPath" source="{ParamsManager}" sourceKey="localCachePath"/>
+		<DataCopier destination="{SlideshowManager}" destinationKey="serverURL" source="{ParamsManager}" sourceKey="serverUrl"/>
+		<DataCopier destination="{SlideshowManager}" destinationKey="maxCacheSizeMB" source="{ParamsManager}" sourceKey="maxCacheSizeMbytes"/>
+		<MethodInvoker generator="{SlideshowManager}" method="instantiateCacheManager"/>
+	</EventHandlers>
+	
+	<!-- AppStatusEvent.CONTACT_SERVER  -->
+	<!-- Send and parse a server request  -->
+	<EventHandlers type="{AppStatusEvent.CONTACT_SERVER}"  debug="false">
+		<DataCopier destination="{services}" destinationKey="mdidUrl" source="{ParamsManager}" sourceKey="serverUrl"/>
+		<WebServiceInvoker instance="{this.services.webServiceAPI}" method="GetInfo" requestTimeout="15" debug="false">
+			<resultHandlers>
+				<MethodInvoker generator="{StatusManager}" method="handleServerContact" arguments="{[resultObject]}" />
+			</resultHandlers>
+			<faultHandlers>
+				<MethodInvoker generator="{StatusManager}" method="handleFault" arguments="{[fault]}"/>
+			</faultHandlers>
+		</WebServiceInvoker>
+		<DataCopier destination="{services}" destinationKey="secureMdidUrl" source="{ParamsManager}" sourceKey="secureServerUrl"/>
+	</EventHandlers>
+	
+	<!-- AppStatusEvent.VALIDATE_MDID2_SESSION -->
+	<!-- Determine whether app running in a browser is part of a user session -->
+	<EventHandlers type="{AppStatusEvent.VALIDATE_MDID2_SESSION}" debug="false">
+		<DataCopier destination="{services}" destinationKey="mdidUrl" source="{ParamsManager}" sourceKey="serverUrl"/>
+		<DataCopier destination="{SlideshowManager}" destinationKey="serverURL" source="{ParamsManager}" sourceKey="serverUrl"/>
+		<WebServiceInvoker instance="{this.services.flashPlayerWebServiceAPI}" method="RefreshSession" requestTimeout="15" debug="false">
+			<resultHandlers>
+				<MethodInvoker generator="{StatusManager}" method="handleValidateMDID2Session" arguments="{[resultObject]}" />
+			</resultHandlers>
+			<faultHandlers>
+				<MethodInvoker generator="{StatusManager}" method="handleFault" arguments="{[fault]}"/>
+			</faultHandlers>
+		</WebServiceInvoker>
+		<MethodInvoker generator="{SlideshowManager}" method="instantiateCacheManager"/>
+	</EventHandlers>
+	
+	<!-- AppStatusEvent.VALIDATE_MDID3_SESSION -->
+	<!-- Determine whether app running in a browser is part of a user session -->
+	<EventHandlers type="{AppStatusEvent.VALIDATE_MDID3_SESSION}" debug="false">
+		<MethodInvoker generator="{StatusManager}" method="updateKeepAliveUrl"/>
+		<DataCopier destination="{services}" destinationKey="keepAliveUrl" source="{StatusManager}" sourceKey="keepAliveUrl"/>
+		<DataCopier destination="{services}" destinationKey="mdidUrl" source="{ParamsManager}" sourceKey="serverUrl"/>
+		<DataCopier destination="{services}" destinationKey="mdidVersion" source="{StatusManager}" sourceKey="mdidVersion"/>
+		<DataCopier destination="{SlideshowManager}" destinationKey="serverURL" source="{ParamsManager}" sourceKey="serverUrl"/>
+		<HTTPServiceInvoker instance="{this.services.jsonServiceKeepAlive}" debug="false">
+			<resultHandlers>
+				<MethodInvoker generator="{StatusManager}" method="handleValidateMDID3Session" arguments="{[resultObject]}" />
+			</resultHandlers>
+			<faultHandlers>
+				<MethodInvoker generator="{StatusManager}" method="handleFault" arguments="{[fault]}"/>
+			</faultHandlers>
+		</HTTPServiceInvoker>
+		<MethodInvoker generator="{SlideshowManager}" method="instantiateCacheManager"/>
+	</EventHandlers>
+	
+	<!-- LoginEvent.LOGOUT  -->
+	<!-- Send and parse a server request  -->
+	<EventHandlers type="{LoginEvent.LOGOUT}" debug="false">
+		<MethodInvoker generator="{AuthorizationManager}" method="logout"/>
+		<MethodInvoker generator="{StatusManager}" method="logout"/>
+		<MethodInvoker generator="{SlideshowManager}" method="unloadCurrentSlideshow"/>
+	</EventHandlers>
+	
+	<!-- LoginEvent.LOGIN  -->
+	<!-- Send and parse a server request  -->
+	<EventHandlers type="{LoginEvent.LOGIN}" debug="false">
+		<WebServiceInvoker instance="{this.services.webServiceAPI}" method="Login" arguments="{[event.username, event.password]}" requestTimeout="15" debug="false">
+			<resultHandlers>
+				<MethodInvoker generator="{AuthorizationManager}" method="parseLoginResults" arguments="{[resultObject]}" />
+				<ResponseAnnouncer type="loginResultResponse">
+					<Properties loginResult="{lastReturn}"/>
+				</ResponseAnnouncer>
+			</resultHandlers>
+			<faultHandlers>
+				<MethodInvoker generator="{AuthorizationManager}" method="handleLoginFault" arguments="{[fault]}"/>
+				<ResponseAnnouncer type="errorResponse">
+					<Properties errorResult="{lastReturn}"/>
+				</ResponseAnnouncer>
+			</faultHandlers>
+			</WebServiceInvoker>
+	</EventHandlers>
+	
+	<!-- LoginEvent.SSL_LOGIN  -->
+	<!-- Send and parse a server request  -->
+	<EventHandlers type="{LoginEvent.SSL_LOGIN}" debug="false">
+		<WebServiceInvoker instance="{this.services.secureWebServiceAPI}" method="Login" arguments="{[event.username, event.password]}" requestTimeout="15" debug="false">
+			<resultHandlers>
+				<MethodInvoker generator="{AuthorizationManager}" method="parseLoginResults" arguments="{[resultObject]}" />
+				<ResponseAnnouncer type="loginResultResponse">
+					<Properties loginResult="{lastReturn}"/>
+				</ResponseAnnouncer>
+			</resultHandlers>
+			<faultHandlers>
+				<MethodInvoker generator="{AuthorizationManager}" method="handleLoginFault" arguments="{[fault]}"/>
+				<ResponseAnnouncer type="errorResponse">
+					<Properties errorResult="{lastReturn}"/>
+				</ResponseAnnouncer>
+			</faultHandlers>
+			</WebServiceInvoker>
+	</EventHandlers>
+	
+	<!-- StatusEvent.UPDATE_STATUS  -->
+	<!-- Update application status  -->
+	<EventHandlers type="{AppStatusEvent.UPDATE_STATUS}" debug="false">
+		<MethodInvoker generator="{StatusManager}" method="updateMessage" arguments="{[event.message]}"/>
+	</EventHandlers>
+	
+	<!-- SlideshowEvent.GET_HTTP  -->
+	<!-- Load selected slideshow  -->
+	<EventHandlers type="{SlideshowEvent.GET_HTTP}" debug="false">
+		<WebServiceInvoker instance="{this.services.webServiceAPI}" method="GetSlideshow" arguments="{[event.slideshowID, event.sessiontoken]}" requestTimeout="15" debug="false">
+			<resultHandlers>
+				<MethodInvoker generator="{SlideshowManager}" method="parseGetSlideshowResults" arguments="{[resultObject, event.slideshowID, event.slideshowtitle]}" />
+				<ResponseAnnouncer type="getSlideshowResultResponse">
+					<Properties getSlideshowResult="{lastReturn}"/>
+				</ResponseAnnouncer>
+			</resultHandlers>
+			<faultHandlers>
+				<MethodInvoker generator="{SlideshowManager}" method="handleGetSlideshowFault" arguments="{[fault]}"/>
+				<ResponseAnnouncer type="errorResponse">
+					<Properties errorResult="{lastReturn}"/>
+				</ResponseAnnouncer>
+			</faultHandlers>
+			</WebServiceInvoker>
+	</EventHandlers>
+	
+	<!-- SlideshowEvent.GET_HTTPS  -->
+	<!-- Load selected slideshow  -->
+	<EventHandlers type="{SlideshowEvent.GET_HTTPS}" debug="false">
+		<WebServiceInvoker instance="{this.services.secureWebServiceAPI}" method="GetSlideshow" arguments="{[event.slideshowID, event.sessiontoken]}" requestTimeout="15" debug="false">
+			<resultHandlers>
+				<MethodInvoker generator="{SlideshowManager}" method="parseGetSlideshowResults" arguments="{[resultObject, event.slideshowID, event.slideshowtitle]}" />
+				<ResponseAnnouncer type="getSlideshowResultResponse">
+					<Properties getSlideshowResult="{lastReturn}"/>
+				</ResponseAnnouncer>
+			</resultHandlers>
+			<faultHandlers>
+				<MethodInvoker generator="{SlideshowManager}" method="handleGetSlideshowFault" arguments="{[fault]}"/>
+				<ResponseAnnouncer type="errorResponse">
+					<Properties errorResult="{lastReturn}"/>
+				</ResponseAnnouncer>
+			</faultHandlers>
+			</WebServiceInvoker>
+	</EventHandlers>
+	
+	<!-- SlideshowEvent.GET_PRESENTATION_MDID3  -->
+	<!-- Load selected MDID3 presentation  -->
+	<EventHandlers type="{SlideshowEvent.GET_PRESENTATION_MDID3}" debug="false">
+		<DataCopier destination="{services}" destinationKey="presentationUrl" source="{event}" sourceKey="presentationUrl"/>
+		<HTTPServiceInvoker instance="{this.services.jsonServiceGetPresentation}" debug="false">
+			<resultHandlers>
+				<MethodInvoker generator="{SlideshowManager}" method="parsePresentationResults" arguments="{[resultObject]}" />
+			</resultHandlers>
+			<faultHandlers>
+				<MethodInvoker generator="{SlideshowManager}" method="handleGetSlideshowFault" arguments="{[fault]}"/>
+				<ResponseAnnouncer type="errorResponse">
+					<Properties errorResult="{lastReturn}"/>
+				</ResponseAnnouncer>
+			</faultHandlers>
+		</HTTPServiceInvoker>
+	</EventHandlers>
+	
+	<!-- SlideshowEvent.GET_SLIDESHOW_INFO_MDID2  -->
+	<!-- Load selected slideshow information and if successful dispatch SlideshowEvent.GET_FROM_QUERYSTRING  -->
+	<EventHandlers type="{SlideshowEvent.GET_SLIDESHOW_INFO_MDID2}" debug="false">
+		<WebServiceInvoker instance="{this.services.flashPlayerWebServiceAPI}" method="GetSlideshowInfo" arguments="{[event.slideshowID]}" requestTimeout="15" debug="false">
+			<resultHandlers>
+				<MethodInvoker generator="{SlideshowManager}" method="parseGetSlideshowInfoResults" arguments="{[resultObject]}" />
+				<EventAnnouncer generator="{SlideshowEvent}" type="{SlideshowEvent.GET_FROM_QUERYSTRING}">
+					<Properties slideshowID="{event.slideshowID}" slideshowtitle="{resultObject.title}" />
+				</EventAnnouncer>			
+			</resultHandlers>
+			<faultHandlers>
+				<MethodInvoker generator="{SlideshowManager}" method="handleGetSlideshowFault" arguments="{[fault]}"/>
+				<ResponseAnnouncer type="errorResponse">
+					<Properties errorResult="{lastReturn}"/>
+				</ResponseAnnouncer>
+			</faultHandlers>
+		</WebServiceInvoker>
+	</EventHandlers>
+	
+	<!-- SlideshowEvent.GET_FROM_QUERYSTRING  -->
+	<!-- Load selected slideshow from web app  -->
+	<EventHandlers type="{SlideshowEvent.GET_FROM_QUERYSTRING}" debug="false">
+		<WebServiceInvoker instance="{this.services.flashPlayerWebServiceAPI}" method="GetSlideshow" arguments="{[event.slideshowID, false, 'F']}" requestTimeout="15" debug="false">
+			<resultHandlers>
+				<MethodInvoker generator="{SlideshowManager}" method="parseGetSlideshowResults" arguments="{[resultObject, event.slideshowID, event.slideshowtitle]}" />
+				<ResponseAnnouncer type="getSlideshowResultResponse">
+					<Properties getSlideshowResult="{lastReturn}"/>
+				</ResponseAnnouncer>
+			</resultHandlers>
+			<faultHandlers>
+				<MethodInvoker generator="{SlideshowManager}" method="handleGetSlideshowFault" arguments="{[fault]}"/>
+				<ResponseAnnouncer type="errorResponse">
+					<Properties errorResult="{lastReturn}"/>
+				</ResponseAnnouncer>
+			</faultHandlers>
+			</WebServiceInvoker>
+	</EventHandlers>
+	
+	<!-- SlideshowEvent.GET_FROM_LOCAL_XML_FILE  -->
+	<!-- Load selected slideshow from local directory  -->
+	<EventHandlers type="{SlideshowEvent.GET_FROM_LOCAL_XML_FILE}" debug="false">
+		<HTTPServiceInvoker instance="{this.services.localXml}" requestTimeout="15" debug="false">
+			<resultHandlers>
+				<MethodInvoker generator="{SlideshowManager}" method="parseGetSlideshowResults" arguments="{[resultObject, event.slideshowID, event.slideshowtitle]}" />
+				<ResponseAnnouncer type="getSlideshowResultResponse">
+					<Properties getSlideshowResult="{lastReturn}"/>
+				</ResponseAnnouncer>
+			</resultHandlers>
+			<faultHandlers>
+				<MethodInvoker generator="{SlideshowManager}" method="handleGetSlideshowFault" arguments="{[fault]}"/>
+				<ResponseAnnouncer type="errorResponse">
+					<Properties errorResult="{lastReturn}"/>
+				</ResponseAnnouncer>
+			</faultHandlers>
+			</HTTPServiceInvoker>
+		<!--<MethodInvoker generator="{SlideshowManager}" method="parseSlideshowFromXmlFile" arguments="{[event.xmlSlideshowLocalPath]}"/>-->
+	</EventHandlers>
+	
+	<!-- SlideshowsEvent.LOAD SlideshowListEvent.INVALIDATE_ALL_IMAGES -->
+	<!-- Load slideshows for current user  -->
+	<EventHandlers type="{SlideshowListEvent.LOAD}" debug="false">
+		<MethodInvoker generator="{Slideshows}" method="loadSlideshowList" arguments="{[event.slideshows]}"/>
+	</EventHandlers>
+	
+	<!-- SlideshowsEvent.INVALIDATE_ALL_IMAGES -->
+	<!-- Invalidate all images in current slideshow -->
+	<EventHandlers type="{SlideshowListEvent.INVALIDATE_ALL_IMAGES}" debug="false">
+		<MethodInvoker generator="{SlideshowManager}" method="invalidateAllImages"/>
+	</EventHandlers>
+	
+	<!-- SlideshowEvent.CHECK_CACHE_SIZE  -->
+	<!-- Load slideshows for current user  -->
+	<EventHandlers type="{SlideshowEvent.CHECK_CACHE_SIZE}" debug="false">
+		<MethodInvoker generator="{SlideshowManager}" method="checkCacheSize"/>
+	</EventHandlers>
+	
+	<!-- ControlBarClickEvent.PIN_TOPBAR -->
+	<!-- Let the application know that the top bar has been pinned. -->
+	<EventHandlers type="{ControlBarClickEvent.PIN_TOPBAR}" debug="false">
+		<MethodInvoker generator="{StatusManager}" method="setTopBarIsPinned" arguments="{[true]}"/>
+	</EventHandlers>
+	
+	<!-- ControlBarClickEvent.UNPIN_TOPBAR -->
+	<!-- Let the application know that the top bar has been unpinned. -->
+	<EventHandlers type="{ControlBarClickEvent.UNPIN_TOPBAR}" debug="false">
+		<MethodInvoker generator="{StatusManager}" method="setTopBarIsPinned" arguments="{[false]}"/>
+	</EventHandlers>
+			
+	<!-- Injectors  -->
+	<Injectors target="{CatalogDataPane}" debug="false" >
+		<PropertyInjector targetKey="windowTitle1" source="{SlideshowManager}" sourceKey="catalogDataWindowTitle1" sourceCache="global" />
+		<PropertyInjector targetKey="catalogDataAsHtmlBlock1" source="{SlideshowManager}" sourceKey="catalogDataAsHtmlBlock1" sourceCache="global" />
+		<PropertyInjector targetKey="notesDataAsHtmlBlock1" source="{SlideshowManager}" sourceKey="notesDataAsHtmlBlock1" sourceCache="global" />
+		<PropertyInjector targetKey="windowTitle2" source="{SlideshowManager}" sourceKey="catalogDataWindowTitle2" sourceCache="global" />
+		<PropertyInjector targetKey="catalogDataAsHtmlBlock2" source="{SlideshowManager}" sourceKey="catalogDataAsHtmlBlock2" sourceCache="global" />
+		<PropertyInjector targetKey="notesDataAsHtmlBlock2" source="{SlideshowManager}" sourceKey="notesDataAsHtmlBlock2" sourceCache="global" />
+	</Injectors>
+	<Injectors target="{AppControlBar}" debug="false" >
+		<PropertyInjector targetKey="countDown" source="{SlideshowManager}" sourceKey="timeUntilNext" sourceCache="global" />
+	</Injectors>
+	<Injectors target="{AppControlBar}" debug="false" >
+		<PropertyInjector targetKey="numImagesCached" source="{CacheManager}" sourceKey="numImagesCached" sourceCache="global" />
+	</Injectors>
+	<Injectors target="{MainView}" debug="false" >
+		<PropertyInjector targetKey="slides" source="{SlideshowManager}" sourceKey="slideList" sourceCache="global" />
+	</Injectors>
+	<Injectors target="{MainView}" debug="false" >
+		<PropertyInjector targetKey="serverURL" source="{ParamsManager}" sourceKey="serverUrl" sourceCache="global" />
+	</Injectors>
+	<Injectors target="{TopBar}" debug="false" >
+		<PropertyInjector targetKey="mainTitle" source="{StatusManager}" sourceKey="statusMessage" sourceCache="global" />
+	</Injectors>
+	<Injectors target="{TopBar}" debug="false" >
+		<PropertyInjector targetKey="posStatus" source="{SlideshowManager}" sourceKey="positionStatus" sourceCache="global" />
+	</Injectors>
+	<Injectors target="{TopBar}" debug="false" >
+		<PropertyInjector targetKey="serverURL" source="{ParamsManager}" sourceKey="serverUrl" sourceCache="global" />
+	</Injectors>
+	<Injectors target="{LoginPane}" debug="false">
+		<PropertyInjector targetKey="isLoggedIn" source="{AuthorizationManager}" sourceKey="isLoggedIn" />
+		<PropertyInjector targetKey="isServerContacted" source="{StatusManager}" sourceKey="isServerContacted" />
+		<PropertyInjector targetKey="secureLoginRequired" source="{StatusManager}" sourceKey="secureLoginRequired" />
+	</Injectors>
+	<Injectors target="{SlideshowsPane}" debug="false">
+		<PropertyInjector targetKey="isLoggedIn" source="{AuthorizationManager}" sourceKey="isLoggedIn" />
+		<PropertyInjector targetKey="sessionToken" source="{AuthorizationManager}" sourceKey="sessionToken" />
+		<PropertyInjector targetKey="currentSlideshowID" source="{SlideshowManager}" sourceKey="currentSlideshowID" />
+		<PropertyInjector targetKey="secureLoginRequired" source="{StatusManager}" sourceKey="secureLoginRequired" />
+		<PropertyInjector targetKey="slideshowsUnarchived" source="{Slideshows}" sourceKey="slideshowsUnarchived" />
+		<PropertyInjector targetKey="slideshowsAll" source="{Slideshows}" sourceKey="slideshowsAll" />
+	</Injectors>
+</EventMap>

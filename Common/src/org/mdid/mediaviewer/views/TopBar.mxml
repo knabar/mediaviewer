@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:ControlBar xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:reflector="com.rictus.reflector.*"
+	xmlns:mate="http://mate.asfusion.com/"
+	width="100%" height="35"
+	styleName="TopBar"
+	creationComplete="init()"
+	 >
+
+	<mx:Script>
+		<![CDATA[
+		import mx.core.UIComponent;
+		import mx.core.Application;
+		import flash.display.StageDisplayState;
+		import org.mdid.mediaviewer.events.ControlBarClickEvent;
+		import org.mdid.mediaviewer.events.EdgeControlsEvent;
+		import org.mdid.mediaviewer.events.AppStatusEvent;
+		import org.mdid.mediaviewer.events.SlideshowEvent;
+	
+		[Bindable]
+		public var posStatus:String;
+		
+		[Bindable]
+		public var mainTitle:String;
+		
+		[Bindable]
+		public var serverURL:String;
+			
+		//[Embed(source="assets/skin.swf", symbol="Connected_gray")]
+		[Embed(source="assets/skin.swf", symbol="Connected")] 
+		public var connected:Class; 
+		
+		//[Embed(source="assets/skin.swf", symbol="Disconnected_gray")]
+		[Embed(source="assets/skin.swf", symbol="Disconnected")] 
+		[Bindable]
+		public var disconnected:Class; 
+		
+		[Embed(source="assets/skin.swf", symbol="Package")] 
+		public var package_icon:Class; 
+		
+		private function init():void {
+			setPinning(this.isBarPinned);
+			var runmode:String = GeneralFactory.getInstance().runmode;
+			if (runmode == GeneralFactory.ZINC_MODE) {
+				this.status.source = package_icon;
+			}
+			this.currentState = runmode;
+		}
+		[Bindable]
+		public var isBarPinned:Boolean;
+		private function setPinning(theIsBarPinned:Boolean):void {
+			var myEventType:String = theIsBarPinned ? ControlBarClickEvent.PIN_TOPBAR : ControlBarClickEvent.UNPIN_TOPBAR;
+			var controlBarClickEvent:ControlBarClickEvent = new ControlBarClickEvent(myEventType);
+			isBarPinned = theIsBarPinned;
+			this.smallpinbutton.styleName = isBarPinned ? "SmallPinnedButton" : "SmallPinButton";
+			this.myDispatcher.dispatchEvent(controlBarClickEvent);
+		}
+		private function updateConnectStatusImage(success:Boolean):void {
+			this.status.source = success ? connected : disconnected;
+		}
+		private function _gotoFullscreen():void {
+			GeneralFactory.getInstance().toggleFullScreen();
+			updateFullscreenButton();
+		}
+		private function updateFullscreenButton():void {
+			this.fullscreen.styleName = (Application.application.stage.displayState == StageDisplayState.NORMAL) ? "Fullscreen" : "ExitFullscreen";
+			this.fullscreen_refl.refresh();
+		}
+		private function dispatchShowCatalogDataEvent():void {
+			var myEvent:SlideshowEvent = new SlideshowEvent(SlideshowEvent.SHOW_CATALOG_DATA_1);
+			myEvent.isDispatchedFromTopBar = true;
+			this.myDispatcher.dispatchEvent(myEvent);
+			var myEvent2:SlideshowEvent = new SlideshowEvent(SlideshowEvent.SHOW_CATALOG_DATA_2);
+			myEvent2.isDispatchedFromTopBar = true;
+			this.myDispatcher.dispatchEvent(myEvent2);
+		}
+		private function returnToWebPage():void {
+			if (GeneralFactory.getInstance().runmode == GeneralFactory.WEB_MODE) {
+				if (GeneralFactory.getInstance().mdidversion == GeneralFactory.MDID2) {
+					GeneralFactory.getInstance().jumpToUrl(GeneralFactory.getInstance().returntourl);
+				} else if (GeneralFactory.getInstance().mdidversion == GeneralFactory.MDID3) {
+					GeneralFactory.getInstance().jumpToUrl(GeneralFactory.getInstance().returntourl);
+				}
+			}
+		}
+		]]>
+	</mx:Script>
+	
+	<!-- Listeners and Dispatchers  -->
+	<mate:Listener type="{AppStatusEvent.LOGIN_ATTEMPT}" receive="updateConnectStatusImage(event.loginSuccessful)" />
+	<mate:Listener type="{AppStatusEvent.FULLSCREEN_EVENT_DETECTED}" receive="updateFullscreenButton()" />
+	<mate:Listener type="{EdgeControlsEvent.RETURN_TO_WEB_PAGE}" receive="returnToWebPage()" />
+	<mate:Dispatcher id="myDispatcher"/>
+
+	<!-- Main GUI -->
+	<mx:HBox horizontalAlign="left" verticalAlign="middle" horizontalGap="0" width="120" paddingLeft="0">
+		<mx:VBox verticalGap="0">
+			<mx:LinkButton id="info" enabled="true" styleName="Info" paddingTop="3" click="dispatchShowCatalogDataEvent()"/>
+			<reflector:Reflector target="{info}" alpha=".4" falloff=".4" blurAmount=".1"/>			
+		</mx:VBox>
+		<mx:Spacer width="6"/>
+		<mx:VBox verticalGap="0" horizontalScrollPolicy="off" verticalScrollPolicy="off">
+			<mx:Label id="XofY" text="{posStatus}" styleName="PositionStatus" height="19" paddingTop="1"/>
+			<reflector:Reflector target="{XofY}" alpha=".4" falloff=".4" blurAmount=".1"/>
+		</mx:VBox>
+	</mx:HBox>
+	<mx:HBox horizontalAlign="center" verticalAlign="middle" horizontalGap="0" width="100%" horizontalScrollPolicy="off" verticalScrollPolicy="off" id="hbox1">
+		<mx:VBox verticalGap="0" horizontalScrollPolicy="off" verticalScrollPolicy="off">
+			<mx:Label id="main_title" maxWidth="{mx.core.Application.application.width - 272}" truncateToFit="true" text="{mainTitle}" styleName="MainTitle" height="19" paddingTop="1"/>
+			<reflector:Reflector target="{main_title}" alpha=".4" falloff=".4" blurAmount=".1"/>
+		</mx:VBox>
+	</mx:HBox>
+	<mx:HBox horizontalAlign="right" verticalAlign="middle" horizontalGap="3" width="120" horizontalScrollPolicy="off">
+		<mx:VBox id="vbox1" verticalGap="0">
+			<mx:Image id="status" source="{disconnected}"/>
+			<reflector:Reflector target="{status}" alpha=".4" falloff=".4" blurAmount=".1"/>			
+		</mx:VBox>
+		<mx:Spacer id="spacer1" width="6"/>
+		<mx:VBox id="vbox2" verticalGap="0">
+			<mx:LinkButton id="return_to" enabled="true" styleName="Returnto" paddingTop="3" click="returnToWebPage();"/>
+			<reflector:Reflector target="{return_to}" alpha=".4" falloff=".4" blurAmount=".1"/>			
+		</mx:VBox>
+		<mx:VBox id="vbox3" verticalGap="0">
+			<mx:LinkButton id="fullscreen" enabled="true" styleName="Fullscreen" click="_gotoFullscreen()" paddingTop="3"/>
+			<reflector:Reflector id="fullscreen_refl" target="{fullscreen}" alpha=".4" falloff=".4" blurAmount=".1"/>			
+		</mx:VBox>
+		<mx:Spacer id="spacer3" width="6"/>
+		<mx:VBox id="vbox4" verticalGap="0">
+			<mx:LinkButton id="smallpinbutton" enabled="true" click="setPinning(!isBarPinned)" styleName="SmallPinButton" paddingTop="3"/>
+			<reflector:Reflector id="pinbutton_refl" target="{smallpinbutton}" alpha=".4" falloff=".4" blurAmount=".1"/>			
+		</mx:VBox>
+	</mx:HBox>
+	
+	<!-- STATES -->
+	<mx:states>
+		<mx:State name="{GeneralFactory.AIR_MODE}">
+			<mx:RemoveChild target="{vbox2}"/>
+		</mx:State>
+		<mx:State name="{GeneralFactory.WEB_MODE}">
+		</mx:State>
+		<mx:State name="{GeneralFactory.ZINC_MODE}">
+			<mx:RemoveChild target="{vbox2}"/>
+		</mx:State>
+	</mx:states>
+</mx:ControlBar>

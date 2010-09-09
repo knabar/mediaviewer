@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Object xmlns:mx="http://www.adobe.com/2006/mxml">
+
+	<mx:Script>
+		<![CDATA[
+		//mdm.swc must be in library path before uncommenting following block
+		//import mdm.Application;
+		//import mdm.Dialogs;
+		
+		[Bindable] public var mdidUrl:String;
+		[Bindable] public var mdidVersion:String;
+		[Bindable] public var presentationUrl:String;
+		[Bindable] public var keepAliveUrl:String;
+		[Bindable] public var secureMdidUrl:String;
+		[Bindable] public var localXmlFileUrl:String = GeneralFactory.getInstance().runmode == GeneralFactory.ZINC_MODE ? GeneralFactory.getInstance().getLocalAppDirectory() + Settings.ZINC_XML_SLIDESHOW_FILENAME : "";
+		]]>
+	</mx:Script>
+
+	<!-- MDID WebService API -->
+	<mx:WebService id="webServiceAPI" wsdl="{mdidUrl + '/webservices/imageviewer.asmx?WSDL'}"/>
+	<mx:WebService id="secureWebServiceAPI" wsdl="{secureMdidUrl + '/webservices/imageviewer.asmx?WSDL'}"/>
+	<mx:WebService id="flashPlayerWebServiceAPI" wsdl="../webservices/flashplayer.asmx?WSDL" />
+	<mx:HTTPService id="jsonServiceKeepAlive" url="{mdidUrl + keepAliveUrl}" method="GET" resultFormat="text"/>
+	<mx:HTTPService id="jsonServiceGetPresentation"  url="{mdidUrl + presentationUrl}" resultFormat="text"/>
+	<mx:HTTPService id="prefsFile" url="{mdidVersion == GeneralFactory.MDID2 ? Settings.PREFS_LOCATION_MDID2 : Settings.PREFS_LOCATION_MDID3}" resultFormat="e4x" />
+	<mx:HTTPService id="localXml" url="{localXmlFileUrl}" resultFormat="e4x" />
+	<mx:HTTPService id="refreshBrowserSession" url="{mdidUrl + 'about.aspx'}" resultFormat="text"/>
+	
+</mx:Object>

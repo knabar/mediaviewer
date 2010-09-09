@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!--
+This is the template for the ImageViewer 2 preferences file.  You can adjust
+the size and location for the local image cache.
+
+The placeholder http://did.cit.jmu.edu/ will be automatically replaced with the URL of the MDID
+installation ImageViewer 2 is download from.  This can be replaced with a 
+static URL if necessary.
+
+To include an opening or closing curly bracket, type two brackets, e.g. { or }
+-->
+<slideshowprefs xmlns="http://mdid.jmu.edu/imageviewer">
+	<url>http://mdid.org/demo/</url> 
+	<localcache maxsize="10000">MDID_Content_Cache</localcache> 
+</slideshowprefs>

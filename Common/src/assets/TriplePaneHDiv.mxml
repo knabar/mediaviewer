@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:views="org.mdid.mediaviewer.views.*"
+	width="100%" height="100%" 
+	horizontalScrollPolicy="off" verticalScrollPolicy="off">
+
+	<mx:HDividedBox  width="100%" height="100%" styleName="PaneDivider">
+		<mx:Box id="leftpane"  width="100%" height="100%">
+			<views:ImageHolder id="leftimage" imageURL="assets/images/ngc6164_gemini_big.jpg"/>
+		</mx:Box>
+		<mx:Box id="centerpane"  width="100%" height="100%">
+			<views:ImageHolder id="centerimage" imageURL="assets/images/texttest.jpg"/>
+		</mx:Box>
+		<mx:Box id="rightpane"  width="100%" height="100%">
+			<views:ImageHolder id="rightimage" imageURL="assets/images/sample.jpg" smoothBitmap="true"/>
+		</mx:Box>
+	</mx:HDividedBox>
+	
+</mx:Canvas>

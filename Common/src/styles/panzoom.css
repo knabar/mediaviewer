@@ -1,0 +1,21 @@
+LinkButton.ZoomInButton {
+	disabledSkin: Embed(source="icons/demoIcons.swf",symbol="MinusButton_Disabled");
+	downSkin: Embed(source="icons/demoIcons.swf",symbol="MinusButton_Down");
+	overSkin: Embed(source="icons/demoIcons.swf",symbol="MinusButton_Over");
+	upSkin: Embed(source="icons/demoIcons.swf",symbol="MinusButton_Up");
+}	
+LinkButton.ZoomOutButton {		
+	disabledSkin: Embed(source="icons/demoIcons.swf",symbol="PlusButton_Disabled");
+	downSkin: Embed(source="icons/demoIcons.swf",symbol="PlusButton_Down");
+	overSkin: Embed(source="icons/demoIcons.swf",symbol="PlusButton_Over");
+	upSkin: Embed(source="icons/demoIcons.swf",symbol="PlusButton_Up");
+}
+VBox.PanZoom {
+	borderStyle: solid;
+	horizontalAlign: center; 
+	cornerRadius: 5; 
+	backgroundAlpha: 0.5; 
+	backgroundColor: #000000;
+	borderThickness: 0; 		
+}
+

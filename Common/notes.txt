@@ -1,0 +1,4 @@
+Using Flex 4:
+Remember these compiler arguments:
+-compatibility-version=3.0.0 -theme=file:///D:/Program%20Files/Adobe/Flex%20Builder%203/sdks/3.2.0/frameworks/themes/Halo/halo.swc
+			if (GeneralFactory.getInstance().isRunningInDualScreenMode && GeneralFactory.getInstance().windowWithFocus != this.parentApplication.name) return;

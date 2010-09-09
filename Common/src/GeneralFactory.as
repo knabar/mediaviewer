@@ -4,8 +4,7 @@ package
 	import flash.system.ApplicationDomain;
 	import flash.system.Security;
 	
-	//mdm.swc must be in library path before uncommenting following block
-	//import mdm.Application;
+	import mdm.Application;
 	
 	public class GeneralFactory
 	{
@@ -46,15 +45,14 @@ package
 			return Security.sandboxType.toString() == "application" ? true : false;
 		}
 		static public function get isZinc():Boolean {
-			//mdm.swc must be in library path before uncommenting following block
-			//			try {
-			//				var myResult:String = mdm.Application.getGlobalVar("isRunningInZinc");
-			//				if (myResult != null && myResult.toLowerCase() == "true") {
-			//					return true;
-			//				}
-			//			} catch (e:Error) {
-			//				return false;
-			//			}
+			try {
+				var myResult:String = mdm.Application.getGlobalVar("isRunningInZinc");
+				if (myResult != null && myResult.toLowerCase() == "true") {
+					return true;
+				}
+			} catch (e:Error) {
+				return false;
+			}
 			return false;
 		}
 	}

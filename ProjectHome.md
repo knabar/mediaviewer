@@ -1,0 +1,1 @@
+MediaViewer will replace the current ImageViewer (see http://sourceforge.net/projects/mdid/).
